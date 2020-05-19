@@ -6,6 +6,7 @@ Created on Mon May  4 16:42:10 2020
 """
 
 import os
+import json
 from feature_functions import *
 from scipy import signal
 import matplotlib.pyplot as plt
@@ -15,18 +16,21 @@ Code for running OpenPose
 """
 
 # set dir for Openpose:
-op_path = 'D:/UBC/Vigilance/OpenPose/openpose-CPU/' # ex: ~\Openpose
+# op_path = 'D:/UBC/Vigilance/OpenPose/openpose-CPU/' # ex: ~\Openpose
 #op_path = 'D:/UBC/Vigilance/OpenPose/openpose-GPU/'
 
 # set path for video:
-vid_fldr = 'D:/UBC/Vigilance/'  # ex: ~\DL00006.mov
-vid_name = 'test'
-vid_ext = '.mp4'
-vid_path = vid_fldr + vid_name + vid_ext
+# vid_fldr = 'D:/UBC/Vigilance/'  # ex: ~\DL00006.mov
+# vid_name = 'test'
+# vid_ext = '.mp4'
+# vid_path = vid_fldr + vid_name + vid_ext
 
 # set parameter to save keypoint
-json_fldr ='D:/UBC/Vigilance/output/'
-json_path = json_fldr + vid_name + '/'
+# json_fldr ='D:/UBC/Vigilance/output/'
+# json_path = json_fldr + vid_name + '/'
+script_dir = os.path.dirname(__file__)
+relative_path = "output\\"
+json_path = os.path.join(script_dir, relative_path)
 
 # set parameter for timestamp of video, in minute
 start_t = 0.0 # ex: enter 10.5 for 10:30
@@ -42,7 +46,7 @@ feet_thresh = 0.36
 #  COMMENT THIS OUT IF YOU ALREADY RAN OPENPOSE ON YOUR VIDEO  #
 ################################################################
 # Go to top level open pose directory
-os.chdir(op_path)
+# os.chdir(op_path)
 
 # Run OpenPose - Note, need to tune these inputs to run on other computers and also output the rendered skeleton
 # Currently settings are just for saving json
@@ -95,3 +99,26 @@ lleg_DL_epoch = epoch_threshold(lleg_DL_filt, 5.0, leg_thresh, 0.0, 1.0)
 rleg_DL_epoch = epoch_threshold(rleg_DL_filt, 5.0, leg_thresh, 0.0, 1.0)
 lfeet_DL_epoch = epoch_threshold(lfeet_DL_filt, 5.0, feet_thresh, 0.0, 1.0)
 rfeet_DL_epoch = epoch_threshold(rfeet_DL_filt, 5.0, feet_thresh, 0.0, 1.0)
+
+return_obj = {
+    "motion": {
+        "Head": head_DL_filt.tolist(),
+        "LeftArm": larm_DL_filt.tolist(),
+        "RightArm": rarm_DL_filt.tolist(),
+        "LeftLeg": lleg_DL_filt.tolist(),
+        "RightLeg": rleg_DL_filt.tolist(),
+        "LeftFoot": lfeet_DL_filt.tolist(),
+        "RightFoot": rfeet_DL_filt.tolist(),
+    },
+    "epoch": {
+        "Head": head_DL_epoch.tolist(),
+        "LeftArm": larm_DL_epoch.tolist(),
+        "RightArm": rarm_DL_epoch.tolist(),
+        "LeftLeg": lleg_DL_epoch.tolist(),
+        "RightLeg": rleg_DL_epoch.tolist(),
+        "LeftFoot": lfeet_DL_epoch.tolist(),
+        "RightFoot": rfeet_DL_epoch.tolist(),
+    }
+}
+# print('test')
+print(json.dumps(return_obj))
