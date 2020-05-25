@@ -5,7 +5,6 @@ const initializeCanvas = () => {
 		$('#secondary_container').append(`
 		<div id="${partId}_diagram_container" style="flex 1; ">
 			<canvas id="${partId}_diagram" width=300 height=100></canvas>
-			<canvas id="${partId}_diagram_epoch" width=300 height=100></canvas>
 		</div>
 	`);
 	});
@@ -17,19 +16,17 @@ const initializeCanvas = () => {
 {
 	/* <div id="test_subject" style="z-index: 2; border-left: 1px solid black; position: relative; bottom: 75px; left: 61px;">test</div> */
 }
-let chartMax = 729;
+let chartMax = 0;
 let xpos = 0;
 const drawCanvas = () => {
 	const video_data = JSON.parse(localStorage.getItem('video_data'));
 	const motion_data = video_data.motion;
 	const epoch_data = video_data.epoch;
-	console.log(epoch_data);
 	const frames_per_second = 30;
 	Chart.defaults.WithLine = Chart.defaults.line;
 	Chart.controllers.WithLine = Chart.controllers.line.extend({
 		draw: function (ease) {
 			Chart.controllers.line.prototype.draw.call(this, ease);
-
 			var ctx = this.chart.ctx,
 				topY = this.chart.legend.bottom,
 				bottomY = this.chart.chartArea.bottom;

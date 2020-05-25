@@ -6,14 +6,34 @@
 		<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';" />
 	</head>
 	<body>
-		<div id="loading" class="d-flex justify-content-center">
+		<div id="loading" class="d-flex justify-content-center" style="visibility: hidden;">
 			<div class="spinner-border" style="top: 40%; position: absolute; width: 10vw; height: 10vw;" role="status">
 				<span class="sr-only">Loading...</span>
 			</div>
 		</div>
-		<!-- <div id="input_screen">
-			<input id="input_btn" type="file" />
-		</div> -->
+		<div id="input_screen">
+			<div id="input_container" style="margin-bottom: 5vh;">
+				<div style="display: flex; flex-direction: column; align-items: center;">
+					<span style="font-size: 4vh; margin-bottom: 2vh;">Step 1</span>
+					<img id="input_btn" src="images/upload.svg" width="100" height="100" style="cursor: pointer;" />
+					<span id="upload_text">Upload</span>
+				</div>
+			</div>
+			<div id="dest_container" style="margin-bottom: 5vh;">
+				<div style="display: flex; flex-direction: column; align-items: center;">
+					<span style="font-size: 4vh; margin-bottom: 2vh;">Step 2</span>
+					<img id="dest_btn" src="images/file.svg" width="100" height="100" style="cursor: pointer;" />
+					<span id="save_text">Select Location to Save Data</span>
+				</div>
+			</div>
+			<div id="continue_container">
+				<div style="display: flex; flex-direction: column; align-items: center;">
+					<span style="font-size: 4vh; margin-bottom: 2vh;">Step 3</span>
+					<img id="continue_btn" src="images/continue.svg" width="100" height="100" style="cursor: pointer;" />
+					<span>Continue</span>
+				</div>
+			</div>
+		</div>
 		<div id="main_content" style="visibility: hidden;">
 			<div id="main_container" style="display: flex; overflow: hidden; height: 90vh;">
 				<div style="flex: 1;">

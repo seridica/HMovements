@@ -4,3 +4,5 @@ project-env
 py/output
 py/__pycache__
 json
+openpose_cpu
+ffmpeg

@@ -6,7 +6,10 @@ Created on Mon May  4 16:42:10 2020
 """
 
 import os
+import sys
 import json
+import math
+import subprocess
 from feature_functions import *
 from scipy import signal
 import matplotlib.pyplot as plt
@@ -17,24 +20,15 @@ Code for running OpenPose
 
 # set dir for Openpose:
 # op_path = 'D:/UBC/Vigilance/OpenPose/openpose-CPU/' # ex: ~\Openpose
-#op_path = 'D:/UBC/Vigilance/OpenPose/openpose-GPU/'
+op_path = os.path.join(os.getcwd(), "openpose_cpu\\")
+ffmpeg_path = os.path.join(os.getcwd(), "ffmpeg\\")
 
-# set path for video:
-# vid_fldr = 'D:/UBC/Vigilance/'  # ex: ~\DL00006.mov
-# vid_name = 'test'
-# vid_ext = '.mp4'
-# vid_path = vid_fldr + vid_name + vid_ext
 
 # set parameter to save keypoint
-# json_fldr ='D:/UBC/Vigilance/output/'
-# json_path = json_fldr + vid_name + '/'
-script_dir = os.path.dirname(__file__)
-relative_path = "output\\"
-json_path = os.path.join(script_dir, relative_path)
 
-# set parameter for timestamp of video, in minute
-start_t = 0.0 # ex: enter 10.5 for 10:30
-end_t = 1.0
+video_path = sys.argv[1]
+save_path = sys.argv[2]
+
 
 # Default thresholds - Taken from Bu's code
 head_thresh = 0.14
@@ -42,25 +36,27 @@ arm_thresh = 0.19
 leg_thresh = 0.97
 feet_thresh = 0.36
 
-################################################################
-#  COMMENT THIS OUT IF YOU ALREADY RAN OPENPOSE ON YOUR VIDEO  #
-################################################################
+video_name = get_video_name(video_path)
+
 # Go to top level open pose directory
-# os.chdir(op_path)
+os.chdir(op_path)
+subprocess.run([r'bin\OpenPoseDemo.exe', '--video', video_path, '--write_json', fr'{save_path}\json', '--write_video', fr'{save_path}\{video_name}.avi', '--display', '0'])
+os.chdir(ffmpeg_path)
+subprocess.run([r'bin\ffmpeg.exe', '-i', fr'{save_path}\{video_name}.avi', fr'{save_path}\{video_name}.mp4'])
+video_duration = subprocess.run(['bin\\ffprobe.exe', '-i', video_path, '-show_entries', 'format=duration', '-v', 'quiet', '-of', 'csv=%s' %("p=0")], stdout=subprocess.PIPE, text=True).stdout
+video_duration = float(video_duration.split('\n')[0])
 
-# Run OpenPose - Note, need to tune these inputs to run on other computers and also output the rendered skeleton
-# Currently settings are just for saving json
-#os.system(op_path + 'bin/OpenPoseDemo.exe  --video ' + vid_path + ' --write_json ' + json_path + ' --display 0')
-################################################################
-################################################################
-
+# set parameter for timestamp of video, in minute
+epoch_length = 5.0
+start_t = 0.0 # ex: enter 10.5 for 10:30
+end_t = math.floor(video_duration/epoch_length) * epoch_length / 60
 """
 Code for post-processing json outputs
 This is adapted from Bu's jupyter notebook code:
 Newest_version.ipynb
 """
 # First extract raw data from the json files
-json_data = open_SCIT_json( json_path )
+json_data = open_SCIT_json( save_path + '\json\\' )
 
 # Compute the max displacements (as defined in the paper) for each of the 25 track points
 max_disp_array = []
@@ -92,13 +88,13 @@ lfeet_DL_filt = signal.filtfilt(b, a, lfeet_DL)
 rfeet_DL_filt = signal.filtfilt(b, a, rfeet_DL)
 
 # Pull the max displacement in each epoch - THESE PRODUCE THE TIMELINES FOR EACH BODY SEGMENT
-head_DL_epoch = epoch_threshold(head_DL_filt, 5.0, head_thresh, 0.0, 1.0)
-larm_DL_epoch = epoch_threshold(larm_DL_filt, 5.0, arm_thresh, 0.0, 1.0)
-rarm_DL_epoch = epoch_threshold(rarm_DL_filt, 5.0, arm_thresh, 0.0, 1.0)
-lleg_DL_epoch = epoch_threshold(lleg_DL_filt, 5.0, leg_thresh, 0.0, 1.0)
-rleg_DL_epoch = epoch_threshold(rleg_DL_filt, 5.0, leg_thresh, 0.0, 1.0)
-lfeet_DL_epoch = epoch_threshold(lfeet_DL_filt, 5.0, feet_thresh, 0.0, 1.0)
-rfeet_DL_epoch = epoch_threshold(rfeet_DL_filt, 5.0, feet_thresh, 0.0, 1.0)
+head_DL_epoch = epoch_threshold(head_DL_filt, epoch_length, head_thresh, start_t, end_t)
+larm_DL_epoch = epoch_threshold(larm_DL_filt, epoch_length, arm_thresh, start_t, end_t)
+rarm_DL_epoch = epoch_threshold(rarm_DL_filt, epoch_length, arm_thresh, start_t, end_t)
+lleg_DL_epoch = epoch_threshold(lleg_DL_filt, epoch_length, leg_thresh, start_t, end_t)
+rleg_DL_epoch = epoch_threshold(rleg_DL_filt, epoch_length, leg_thresh, start_t, end_t)
+lfeet_DL_epoch = epoch_threshold(lfeet_DL_filt, epoch_length, feet_thresh, start_t, end_t)
+rfeet_DL_epoch = epoch_threshold(rfeet_DL_filt, epoch_length, feet_thresh, start_t, end_t)
 
 return_obj = {
     "motion": {
@@ -120,5 +116,4 @@ return_obj = {
         "RightFoot": rfeet_DL_epoch.tolist(),
     }
 }
-# print('test')
 print(json.dumps(return_obj))

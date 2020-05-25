@@ -15,7 +15,6 @@ def open_SCIT_json(json_path):
     
     video_data = []
     json_files = os.listdir(json_path)
-    
     for fname in json_files:
         with open(json_path + fname) as json_file:
             data = json.load(json_file)
@@ -151,3 +150,7 @@ def compute_nor(video_data, start_t, end_t):
 
 	return np.median(D)
 
+def get_video_name(video_path):
+	split = video_path.split('\\')
+	name_with_ext = split[-1]
+	return name_with_ext.split('.')[0]
