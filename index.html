@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8" />
+		<title>HMovements</title>
+		<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';" />
+	</head>
+	<body>
+		<div id="loading" class="d-flex justify-content-center" style="visibility: hidden;">
+			<div class="spinner-border" style="top: 40%; position: absolute; width: 10vw; height: 10vw;" role="status">
+				<span class="sr-only">Loading...</span>
+			</div>
+		</div>
+		<div id="input_screen" style="visibility: hidden;">
+			<div id="new_input">
+				<div id="input_container" style="margin-bottom: 5vh;">
+					<div style="display: flex; flex-direction: column; align-items: center;">
+						<span style="font-size: 4vh; margin-bottom: 2vh;">Step 1</span>
+						<img id="input_btn" src="images/upload.svg" width="100" height="100" style="cursor: pointer;" />
+						<span id="upload_text">Upload New File</span>
+					</div>
+				</div>
+				<div id="dest_container" style="margin-bottom: 5vh;">
+					<div style="display: flex; flex-direction: column; align-items: center;">
+						<span style="font-size: 4vh; margin-bottom: 2vh;">Step 2</span>
+						<img id="dest_btn" src="images/file.svg" width="100" height="100" style="cursor: pointer;" />
+						<span id="save_text">Select Location to Save Data</span>
+					</div>
+				</div>
+				<div id="continue_container">
+					<div style="display: flex; flex-direction: column; align-items: center;">
+						<span style="font-size: 4vh; margin-bottom: 2vh;">Step 3</span>
+						<img id="continue_btn" src="images/continue.svg" width="100" height="100" style="cursor: pointer;" />
+						<span>Continue</span>
+					</div>
+				</div>
+			</div>
+			<div id="existing_input">
+				<div id="import_container" style="margin-bottom: 5vh;">
+					<div style="display: flex; flex-direction: column; align-items: center;">
+						<img id="import_btn" src="images/upload.svg" width="100" height="100" style="cursor: pointer;" />
+						<span id="import_text">Import Existing File</span>
+					</div>
+				</div>
+			</div>
+			<div style="border-right: 1px solid black; position: absolute; height: 60vh; top: 20%; width: 50%;"></div>
+		</div>
+		<div id="main_content" style="visibility: hidden;">
+			<div id="main_container" style="display: flex; overflow: hidden; height: 90vh;">
+				<div style="flex: 1;">
+					<div class="player_container">
+						<video class="player" id="main_player"></video>
+					</div>
+					<div class="player_container">
+						<video class="player" id="skeleton_player"></video>
+					</div>
+				</div>
+			</div>
+			<div id="parts_folder"></div>
+			<div class="controls">
+				<img id="play_btn" src="images/continue.svg" style="cursor: pointer; height: 3vh; width: 3vw;" />
+				<img id="pause_btn" src="images/pause.svg" style="display: none; cursor: pointer; height: 3vh; width: 3vw;" />
+				<span id="video_time"></span>
+			</div>
+			<div id="progress_bar_container">
+				<div id="progress_bar"></div>
+			</div>
+		</div>
+		<link rel="stylesheet" href="css/index.css" />
+		<link rel="stylesheet" href="node_modules/tachyons/css/tachyons.min.css" />
+		<link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css" />
+		<script src="./main.js"></script>
+	</body>
+</html>
