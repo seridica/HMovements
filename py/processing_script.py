@@ -28,26 +28,33 @@ ffmpeg_path = os.path.join(os.getcwd(), "ffmpeg\\")
 
 video_path = sys.argv[1]
 save_path = sys.argv[2]
-
+should_run_openpose = sys.argv[3]
 
 # Default thresholds - Taken from Bu's code
-head_thresh = 0.14
-arm_thresh = 0.19
-leg_thresh = 0.97
-feet_thresh = 0.36
+# head_thresh = 0.14
+# arm_thresh = 0.19
+# leg_thresh = 0.97
+# feet_thresh = 0.36
 
+head_thresh = float(sys.argv[4])
+arm_thresh = float(sys.argv[5])
+leg_thresh = float(sys.argv[6])
+feet_thresh = float(sys.argv[7])
 video_name = get_video_name(video_path)
 
 # Go to top level open pose directory
-os.chdir(op_path)
-subprocess.run([r'bin\OpenPoseDemo.exe', '--video', video_path, '--write_json', fr'{save_path}\json', '--write_video', fr'{save_path}\{video_name}.avi', '--display', '0'])
+if should_run_openpose == '1':
+    # os.chdir(op_path)
+    # subprocess.run([r'bin\OpenPoseDemo.exe', '--video', video_path, '--write_json', fr'{save_path}\json', '--write_video', fr'{save_path}\{video_name}.avi', '--display', '0'])
+    # os.chdir(ffmpeg_path)
+    # subprocess.run([r'bin\ffmpeg.exe', '-i', fr'{save_path}\{video_name}.avi', fr'{save_path}\{video_name}.mp4'])
+    print('test')
+
 os.chdir(ffmpeg_path)
-subprocess.run([r'bin\ffmpeg.exe', '-i', fr'{save_path}\{video_name}.avi', fr'{save_path}\{video_name}.mp4'])
 video_duration = subprocess.run(['bin\\ffprobe.exe', '-i', video_path, '-show_entries', 'format=duration', '-v', 'quiet', '-of', 'csv=%s' %("p=0")], stdout=subprocess.PIPE, text=True).stdout
 video_duration = float(video_duration.split('\n')[0])
-
 # set parameter for timestamp of video, in minute
-epoch_length = 5.0
+epoch_length = float(sys.argv[8])
 start_t = 0.0 # ex: enter 10.5 for 10:30
 end_t = math.floor(video_duration/epoch_length) * epoch_length / 60
 """

@@ -11,7 +11,7 @@
 				<span class="sr-only">Loading...</span>
 			</div>
 		</div>
-		<div id="input_screen" style="visibility: hidden;">
+		<div id="input_screen" style="visibility: visible; z-index: 1;">
 			<div id="new_input">
 				<div id="input_container" style="margin-bottom: 5vh;">
 					<div style="display: flex; flex-direction: column; align-items: center;">
@@ -43,32 +43,45 @@
 					</div>
 				</div>
 			</div>
-			<div style="border-right: 1px solid black; position: absolute; height: 60vh; top: 20%; width: 50%;"></div>
+			<div style="border-right: 1px solid black; position: absolute; height: 60vh; top: 20%; width: 50%; z-index: -1;"></div>
 		</div>
-		<div id="main_content" style="visibility: hidden;">
-			<div id="main_container" style="display: flex; overflow: hidden; height: 90vh;">
-				<div style="flex: 1;">
-					<div class="player_container">
-						<video class="player" id="main_player"></video>
+		<div id="main_content" style="visibility: hidden; z-index: -1;">
+			<div id="content_wrapper">
+				<div id="main_container" style="display: flex; overflow: hidden; height: 90vh;">
+					<div style="flex: 1;">
+						<div class="player_container">
+							<video class="player" id="main_player"></video>
+						</div>
+						<div class="player_container">
+							<video class="player" id="skeleton_player"></video>
+						</div>
 					</div>
-					<div class="player_container">
-						<video class="player" id="skeleton_player"></video>
-					</div>
+					<div id="diagram_container"></div>
+				</div>
+				<div id="parts_btn_folder"></div>
+				<div class="controls">
+					<img id="play_btn" src="images/continue.svg" style="cursor: pointer; height: 3vh; width: 3vw;" />
+					<img id="pause_btn" src="images/pause.svg" style="display: none; cursor: pointer; height: 3vh; width: 3vw;" />
+					<span id="video_time"></span>
+				</div>
+				<div id="progress_bar_container">
+					<div id="progress_bar"></div>
 				</div>
 			</div>
-			<div id="parts_folder"></div>
-			<div class="controls">
-				<img id="play_btn" src="images/continue.svg" style="cursor: pointer; height: 3vh; width: 3vw;" />
-				<img id="pause_btn" src="images/pause.svg" style="display: none; cursor: pointer; height: 3vh; width: 3vw;" />
-				<span id="video_time"></span>
-			</div>
-			<div id="progress_bar_container">
-				<div id="progress_bar"></div>
+			<img id="settings_btn" src="images/settings.svg" />
+			<div id="settings_content" class="shadow-3">
+				<span style="text-align: center; font-size: 2vw; margin-top: 5px;">Settings</span>
+				<div id="settings_container"></div>
+				<div id="save_btn" class="grow br-pill ba ph3 black">
+					Save Settings
+				</div>
+				<span style="font-size: 0.8vw;">Note: Changing any of the settings above will take some time to reload.</span>
+				<img id="close_btn" src="./images/close.svg" />
 			</div>
 		</div>
 		<link rel="stylesheet" href="css/index.css" />
 		<link rel="stylesheet" href="node_modules/tachyons/css/tachyons.min.css" />
 		<link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css" />
-		<script src="./main.js"></script>
+		<script src="./index.js"></script>
 	</body>
 </html>

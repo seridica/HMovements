@@ -1,7 +1,7 @@
 .player_container {
 	margin: 5vh 0px 0px 5px;
 	border: 5px solid black;
-	width: 40vw;
+	width: 45vw;
 	height: 40vh;
 }
 
@@ -18,7 +18,7 @@
 	bottom: 0.5vh;
 }
 
-#parts_folder {
+#parts_btn_folder {
 	display: flex;
 	justify-content: space-around;
 	flex-direction: column;
@@ -91,4 +91,65 @@
 	max-width: inherit;
 	width: 0px;
 	background: rgba(255, 99, 132, 1);
+}
+
+#diagram_container {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	padding-top: 5vh;
+	padding-right: 10px;
+	overflow: auto;
+	overflow-x: hidden;
+	width: 100%;
+	margin: 0vh 5vw 0vh 2vw;
+}
+
+#settings_btn {
+	position: absolute;
+	top: 2vh;
+	right: 2vh;
+	cursor: pointer;
+	height: 2vh;
+	width: 2vw;
+}
+
+#settings_content {
+	display: none;
+	flex-direction: column;
+	flex: 1;
+	position: absolute;
+	left: 30vw;
+	top: 25vh;
+	height: 50vh;
+	width: 40vw;
+	background-color: white;
+	align-items: center;
+}
+
+#settings_container {
+	display: flex;
+	height: 35vh;
+	width: 30vw;
+	flex-direction: column;
+	align-items: left;
+	overflow: auto;
+}
+
+#close_btn {
+	position: absolute;
+	top: 1vh;
+	right: 0.5vw;
+	cursor: pointer;
+	height: 2vh;
+	width: 2vw;
+}
+
+#save_btn {
+	width: 10vw;
+	height: 3vh;
+	font-size: 1vw;
+	text-align: center;
+	line-height: 3vh;
+	cursor: pointer;
 }
