@@ -1,36 +1,43 @@
-const { body_parts_threshold } = require('./constants');
 const fs = require('fs');
 class ConfigStore {
-	constructor(video_path, save_path, threshold, epoch_length) {
-		this.video_path = video_path;
-		this.save_path = save_path;
-		this.threshold = threshold;
-		this.epoch_length = epoch_length;
+	constructor(videoPath, savePath, threshold, epochLength) {
+		this._videoPath = videoPath;
+		this._savePath = savePath;
+		this._threshold = threshold;
+		this._epochLength = epochLength;
 	}
 
-	get mutable_data() {
+	get mutableData() {
 		return {
-			epoch_length: this.epoch_length,
-			...this.threshold,
+			epochLength: this._epochLength,
+			...this._threshold,
 		};
+	}
+
+	get epochLength() {
+		return this._epochLength;
+	}
+
+	get videoPath() {
+		return this._videoPath;
 	}
 
 	set(key, val) {
 		this[key] = val;
 	}
-	save_data(value) {
-		this.threshold = value.threshold;
-		this.epoch_length = value.epoch_length;
-		this.write_settings();
+	saveData(value) {
+		this._threshold = value.threshold;
+		this._epochLength = value.epochLength;
+		this.writeSettings();
 	}
 
-	write_settings() {
+	writeSettings() {
 		const settings = {
-			video_path: this.video_path,
-			body_parts_threshold: this.threshold,
-			epoch_length: this.epoch_length,
+			videoPath: this._videoPath,
+			bodyPartsThreshold: this._threshold,
+			epochLength: this._epochLength,
 		};
-		fs.writeFileSync(`${this.save_path}/config.json`, JSON.stringify(settings), 'utf8');
+		fs.writeFileSync(`${this._savePath}/config.json`, JSON.stringify(settings), 'utf8');
 	}
 }
 

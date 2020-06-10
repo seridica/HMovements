@@ -1,15 +1,15 @@
-const body_parts = ['Head', 'Left Arm', 'Right Arm', 'Left Leg', 'Right Leg', 'Left Foot', 'Right Foot'];
+const bodyParts = ['Head', 'Left Arm', 'Right Arm', 'Left Leg', 'Right Leg', 'Left Foot', 'Right Foot'];
 
-const epoch_length = 5.0;
+const epochLength = 5.0;
 
-const body_parts_threshold = {
+const bodyPartsThreshold = {
 	Head: 0.14,
 	Arms: 0.19,
 	Legs: 0.97,
 	Feet: 0.36,
 };
 
-const body_parts_threshold_diagram = {
+const bodyPartsThresholdDiagram = {
 	Head: 0.14,
 	LeftArm: 0.19,
 	RightArm: 0.19,
@@ -19,9 +19,12 @@ const body_parts_threshold_diagram = {
 	RightFoot: 0.36,
 };
 
+const fps = 30.0;
+
 module.exports = {
-	body_parts,
-	epoch_length,
-	body_parts_threshold,
-	body_parts_threshold_diagram,
+	bodyParts,
+	epochLength,
+	bodyPartsThreshold,
+	bodyPartsThresholdDiagram,
+	fps,
 };

@@ -1,9 +1,9 @@
 require('chart.js');
-const { body_parts_threshold_diagram, body_parts } = require('./constants');
+const { bodyParts, fps } = require('./constants');
 const ChartAnnotation = require('chartjs-plugin-annotation');
 const util = require('./util');
 exports.initializeCanvas = () => {
-	body_parts.forEach((part) => {
+	bodyParts.forEach((part) => {
 		const partId = part.replace(' ', '');
 		$('#diagram_container').append(`
 			<div id="${partId}_diagram_container" >
@@ -11,12 +11,9 @@ exports.initializeCanvas = () => {
 			</div>
 		`);
 	});
-	// <div id="${partId}_diagram_maximize" style="position: relative; width: 25px; height: 25px; z-index: 2; top: 5%; margin-left: 97%;" >
-	// 	<img src="images/fullscreen.svg">
-	// </div>
 };
 
-function get_chart_options(part, data, threshold_value, background_color) {
+function getChartOptions(part, data, thresholdValue, backgroundColor, epochLength) {
 	return {
 		type: 'WithLine',
 		data: {
@@ -40,7 +37,7 @@ function get_chart_options(part, data, threshold_value, background_color) {
 						type: 'line',
 						mode: 'horizontal',
 						scaleID: 'y-axis-0',
-						value: threshold_value,
+						value: thresholdValue,
 						borderColor: 'rgb(255, 99, 132)',
 						borderWidth: 2,
 						label: {
@@ -61,14 +58,14 @@ function get_chart_options(part, data, threshold_value, background_color) {
 				duration: 0,
 			},
 			chartArea: {
-				backgroundColor: background_color,
+				backgroundColor: backgroundColor,
 			},
 			scales: {
 				xAxes: [
 					{
 						ticks: {
 							beginAtZero: true,
-							stepSize: 5,
+							stepSize: epochLength,
 							backdropColor: 'black',
 						},
 						distribution: 'linear',
@@ -103,11 +100,10 @@ function get_chart_options(part, data, threshold_value, background_color) {
 	};
 }
 
-exports.drawCanvas = (config_store) => {
-	const video_data = JSON.parse(localStorage.getItem('video_data'));
-	const motion_data = video_data.motion;
-	const epoch_data = video_data.epoch;
-	const frames_per_second = 30;
+exports.drawCanvas = (configStore) => {
+	const videoData = JSON.parse(localStorage.getItem('videoData'));
+	const motionData = videoData.motion;
+	const epochData = videoData.epoch;
 	Chart.defaults.WithLine = Chart.defaults.line;
 	Chart.controllers.WithLine = Chart.controllers.line.extend({
 		draw: function (ease) {
@@ -117,16 +113,16 @@ exports.drawCanvas = (config_store) => {
 				bottomY = this.chart.chartArea.bottom;
 
 			let percentage = 0;
-			if (video_player.readyState >= 3) {
-				percentage = video_player.currentTime / util.calculate_video_duration_by_epoch(5.0, video_player.duration);
+			if (videoPlayer.readyState >= 3) {
+				percentage = videoPlayer.currentTime / util.calculateVideoDurationByEpoch(configStore.epochLength, videoPlayer.duration);
 			}
 			percentage = Math.min(percentage, 1);
-			const chart_max = this.chart.chartArea.right - this.chart.chartArea.left;
+			const chartMax = this.chart.chartArea.right - this.chart.chartArea.left;
 			// draw line
 			ctx.save();
 			ctx.beginPath();
-			ctx.moveTo(this.chart.chartArea.left + percentage * chart_max, topY);
-			ctx.lineTo(this.chart.chartArea.left + percentage * chart_max, bottomY);
+			ctx.moveTo(this.chart.chartArea.left + percentage * chartMax, topY);
+			ctx.lineTo(this.chart.chartArea.left + percentage * chartMax, bottomY);
 			ctx.lineWidth = 2;
 			ctx.strokeStyle = 'black';
 			ctx.stroke();
@@ -150,33 +146,33 @@ exports.drawCanvas = (config_store) => {
 			}
 		},
 	});
-	body_parts.forEach((part) => {
-		const part_data = motion_data[part.replace(' ', '')];
-		const part_epoch_data = epoch_data[part.replace(' ', '')];
-		var threshold_value = 0;
+	bodyParts.forEach((part) => {
+		const partData = motionData[part.replace(' ', '')];
+		const partEpochData = epochData[part.replace(' ', '')];
+		var thresholdValue = 0;
 		if (part.includes('Head')) {
-			threshold_value = config_store.mutable_data['Head'];
+			thresholdValue = configStore.mutableData['Head'];
 		} else if (part.includes('Arm')) {
-			threshold_value = config_store.mutable_data['Arms'];
+			thresholdValue = configStore.mutableData['Arms'];
 		} else if (part.includes('Leg')) {
-			threshold_value = config_store.mutable_data['Legs'];
+			thresholdValue = configStore.mutableData['Legs'];
 		} else {
-			threshold_value = config_store.mutable_data['Feet'];
+			thresholdValue = configStore.mutableData['Feet'];
 		}
-		const chart_background_color = part_epoch_data.map((epoch) => {
+		const chartBackgroundColor = partEpochData.map((epoch) => {
 			return epoch ? 'rgba(139, 240, 193, 0.2)' : 'rgba(255, 99, 132, 0.1)';
 		});
-		let data_points = [];
-		for (let i = 0; i < part_data.length; i++) {
-			data_points.push({ x: i / frames_per_second, y: part_data[i] });
+		let dataPoints = [];
+		for (let i = 0; i < partData.length; i++) {
+			dataPoints.push({ x: i / fps, y: partData[i] });
 		}
 		let partId = part.replace(' ', '') + '_diagram';
-		const motion_ctx = document.getElementById(partId).getContext('2d');
-		const chart = new Chart(motion_ctx, get_chart_options(part, data_points, threshold_value, chart_background_color));
+		const motionCtx = document.getElementById(partId).getContext('2d');
+		const chart = new Chart(motionCtx, getChartOptions(part, dataPoints, thresholdValue, chartBackgroundColor, configStore.epochLength));
 		let interval = null;
 		$('#play_btn').click(() => {
 			interval = setInterval(() => {
-				if (video_player.ended) clearInterval(interval);
+				if (videoPlayer.ended) clearInterval(interval);
 				chart.update();
 			}, 500);
 		});

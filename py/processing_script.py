@@ -44,11 +44,10 @@ video_name = get_video_name(video_path)
 
 # Go to top level open pose directory
 if should_run_openpose == '1':
-    # os.chdir(op_path)
-    # subprocess.run([r'bin\OpenPoseDemo.exe', '--video', video_path, '--write_json', fr'{save_path}\json', '--write_video', fr'{save_path}\{video_name}.avi', '--display', '0'])
-    # os.chdir(ffmpeg_path)
-    # subprocess.run([r'bin\ffmpeg.exe', '-i', fr'{save_path}\{video_name}.avi', fr'{save_path}\{video_name}.mp4'])
-    print('test')
+    os.chdir(op_path)
+    subprocess.run([r'bin\OpenPoseDemo.exe', '--video', video_path, '--write_json', fr'{save_path}\json', '--write_video', fr'{save_path}\{video_name}.avi', '--display', '0'])
+    os.chdir(ffmpeg_path)
+    subprocess.run([r'bin\ffmpeg.exe', '-i', fr'{save_path}\{video_name}.avi', fr'{save_path}\{video_name}.mp4'])
 
 os.chdir(ffmpeg_path)
 video_duration = subprocess.run(['bin\\ffprobe.exe', '-i', video_path, '-show_entries', 'format=duration', '-v', 'quiet', '-of', 'csv=%s' %("p=0")], stdout=subprocess.PIPE, text=True).stdout
