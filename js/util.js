@@ -1,12 +1,12 @@
 const fs = require('fs');
 const { bodyPartsThreshold, epochLength } = require('./constants');
-const processNewFile = (err, data) => {
+const processNewFile = (err, data, initFunction) => {
 	if (err) console.log(err);
 	processHelper(data, writeToFile);
-	initialize();
+	initFunction();
 };
 
-const processNewSetting = (err, data) => {
+const processNewSetting = (err, data, refreshCanvas) => {
 	if (err) console.log(err);
 	processHelper(data, updateFile);
 	refreshCanvas();

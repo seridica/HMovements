@@ -153,3 +153,12 @@
 	line-height: 3vh;
 	cursor: pointer;
 }
+
+#divider {
+	border-right: 1px solid black;
+	position: absolute;
+	height: 60vh;
+	top: 20%;
+	width: 50%;
+	z-index: -1;
+}

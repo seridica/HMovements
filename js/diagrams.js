@@ -2,16 +2,6 @@ require('chart.js');
 const { bodyParts, fps } = require('./constants');
 const ChartAnnotation = require('chartjs-plugin-annotation');
 const util = require('./util');
-exports.initializeCanvas = () => {
-	bodyParts.forEach((part) => {
-		const partId = part.replace(' ', '');
-		$('#diagram_container').append(`
-			<div id="${partId}_diagram_container" >
-				<canvas id="${partId}_diagram"  width=300 height=110></canvas>
-			</div>
-		`);
-	});
-};
 
 function getChartOptions(part, data, thresholdValue, backgroundColor, epochLength) {
 	return {
@@ -100,7 +90,18 @@ function getChartOptions(part, data, thresholdValue, backgroundColor, epochLengt
 	};
 }
 
-exports.drawCanvas = (configStore) => {
+function initializeCanvas() {
+	bodyParts.forEach((part) => {
+		const partId = part.replace(' ', '');
+		$('#diagram_container').append(`
+			<div id="${partId}_diagram_container" >
+				<canvas id="${partId}_diagram"  width=300 height=110></canvas>
+			</div>
+		`);
+	});
+}
+
+function drawCanvas(videoPlayer) {
 	const videoData = JSON.parse(localStorage.getItem('videoData'));
 	const motionData = videoData.motion;
 	const epochData = videoData.epoch;
@@ -178,6 +179,51 @@ exports.drawCanvas = (configStore) => {
 		});
 		$('#pause_btn').click(() => {
 			if (interval) clearInterval(interval);
+		});
+	});
+}
+
+exports.refreshCanvas = function () {
+	bodyParts.forEach((part) => {
+		const id = part.replace(' ', '');
+		if ($('#' + id).data('toggle')) {
+			$('#' + id).click();
+		}
+	});
+	this.init(videoPlayer, true);
+};
+
+exports.init = function (videoPlayer, isNewSettings) {
+	const partsTab = $('#partsTab');
+	initializeCanvas();
+	drawCanvas(configStore, videoPlayer);
+
+	$('#parts_btn').click(() => {
+		partsTab.css('display') === 'none' ? partsTab.css({ display: 'block' }) : partsTab.css({ display: 'none' });
+	});
+
+	if (isNewSettings === false) {
+		const partsFolder = $('#parts_btn_folder');
+		bodyParts.map((part) => {
+			partsFolder.append(`<div id=${part.replace(' ', '')} data-toggle="false" class="dim, parts" >${part}</div>`);
+		});
+	}
+
+	bodyParts.forEach((part) => {
+		const id = part.replace(' ', '');
+		let partDiagram = $('#' + id + '_diagram_container');
+		let bodyHtml = partDiagram.detach();
+		$('#' + id).off('click');
+		$('#' + id).click(function () {
+			let color = '#ebebeb';
+			$(this).data({ toggle: !$(this).data('toggle') });
+			if (!$(this).data('toggle')) {
+				color = 'black';
+				partDiagram.detach();
+			} else {
+				bodyHtml.appendTo('#diagram_container');
+			}
+			$(this).css({ color, 'border-color': color });
 		});
 	});
 };
