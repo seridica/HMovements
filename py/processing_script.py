@@ -123,3 +123,49 @@ return_obj = {
     }
 }
 print(json.dumps(return_obj))
+
+
+# SAVING STUFF
+# SAVES BOTH AS A SERIALIZED PYTHON FILE AS WELL AS 2 CSV FILES
+# First CSV file contains the segment motions (*_*_filt)
+# Second CSV file contains the epoch results
+# Python file contains the above CSV file inforamtion as well as the raw max_disp_data
+np.savez('analysis.npz', max_disp_data=max_disp_data, head_DL_filt=head_DL_filt,
+         larm_DL_filt=larm_DL_filt, rarm_DL_filt=rarm_DL_filt, lleg_DL_filt=lleg_DL_filt,
+         rleg_DL_filt=rleg_DL_filt, lfeet_DL_filt=lfeet_DL_filt, rfeet_DL_filt=rfeet_DL_filt,
+         head_DL_epoch=head_DL_epoch, larm_DL_epoch=larm_DL_epoch, rarm_DL_epoch=rarm_DL_epoch,
+         lleg_DL_epoch=lleg_DL_epoch, rleg_DL_epoch=rleg_DL_epoch, lfeet_DL_epoch=lfeet_DL_epoch,
+         rfeet_DL_epoch=rfeet_DL_epoch)
+
+# Force column vectors for arrays to concatenate
+head_DL_filt.shape = (head_DL_filt.shape[0], 1)
+larm_DL_filt.shape = (larm_DL_filt.shape[0], 1)
+rarm_DL_filt.shape = (rarm_DL_filt.shape[0], 1)
+lleg_DL_filt.shape = (lleg_DL_filt.shape[0], 1)
+rleg_DL_filt.shape = (rleg_DL_filt.shape[0], 1)
+lfeet_DL_filt.shape = (lfeet_DL_filt.shape[0], 1)
+rfeet_DL_filt.shape = (rfeet_DL_filt.shape[0], 1)
+
+csv_filt = np.append(head_DL_filt, larm_DL_filt, axis=1)
+csv_filt = np.append(csv_filt, rarm_DL_filt, axis=1)
+csv_filt = np.append(csv_filt, lleg_DL_filt, axis=1)
+csv_filt = np.append(csv_filt, rleg_DL_filt, axis=1)
+csv_filt = np.append(csv_filt, lfeet_DL_filt, axis=1)
+csv_filt = np.append(csv_filt, rfeet_DL_filt, axis=1)
+np.savetxt('SegmentMovements.csv', csv_filt, delimiter=',', header='Head, Left Arm, Right Arm, Left Leg, Right Leg, Left Foot, Right Foot')
+
+head_DL_epoch.shape = (head_DL_epoch.shape[0], 1)
+larm_DL_epoch.shape = (larm_DL_epoch.shape[0], 1)
+rarm_DL_epoch.shape = (rarm_DL_epoch.shape[0], 1)
+lleg_DL_epoch.shape = (lleg_DL_epoch.shape[0], 1)
+rleg_DL_epoch.shape = (rleg_DL_epoch.shape[0], 1)
+lfeet_DL_epoch.shape = (lfeet_DL_epoch.shape[0], 1)
+rfeet_DL_epoch.shape = (rfeet_DL_epoch.shape[0], 1)
+
+csv_epoch = np.append(head_DL_epoch, larm_DL_epoch, axis=1)
+csv_epoch = np.append(csv_epoch, rarm_DL_epoch, axis=1)
+csv_epoch = np.append(csv_epoch, lleg_DL_epoch, axis=1)
+csv_epoch = np.append(csv_epoch, rleg_DL_epoch, axis=1)
+csv_epoch = np.append(csv_epoch, lfeet_DL_epoch, axis=1)
+csv_epoch = np.append(csv_epoch, rfeet_DL_epoch, axis=1)
+np.savetxt('SegmentEpochs.csv', csv_epoch, delimiter=',', header='Head, Left Arm, Right Arm, Left Leg, Right Leg, Left Foot, Right Foot')
