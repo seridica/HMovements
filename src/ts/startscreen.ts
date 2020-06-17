@@ -1,8 +1,10 @@
-const { remote } = require('electron');
-const { fps } = require('./constants');
-const util = require('./util');
-const ConfigStore = require('./configstore');
-exports.init = function (pythonScript, initialize) {
+import { remote } from 'electron';
+import { fps, bodyPartsThreshold, epochLength } from './constants';
+import * as util from './util';
+import ConfigStore from './configstore';
+import * as $ from 'jquery';
+export function init(pythonScript: Function, initialize: Function, videoPlayer: HTMLVideoElement) {
+	let configStore: ConfigStore | null = null;
 	window.onbeforeunload = function () {
 		localStorage.clear();
 	};
@@ -49,11 +51,11 @@ exports.init = function (pythonScript, initialize) {
 		if (localStorage.getItem('videoPath') !== null && savePath !== null) {
 			$('#input_screen').css({ visibility: 'hidden' });
 			$('#loading').css({ visibility: 'visible' });
-			initLoadingScreen(savePath);
-			pythonScript((err, data) => {
-				util.processNewFile(err, data, initialize);
+			configStore = new ConfigStore(localStorage.getItem('videoPath')!, savePath, bodyPartsThreshold, epochLength);
+			initLoadingScreen(savePath, videoPlayer);
+			pythonScript((err: Error, data: string) => {
+				util.processNewFile(err, data, () => initialize(configStore));
 			});
-			configStore = new ConfigStore(localStorage.getItem('videoPath'), savePath, bodyPartsThreshold, epochLength);
 		} else {
 			alert('Make sure you have uploaded a video and select the save location.');
 		}
@@ -67,20 +69,20 @@ exports.init = function (pythonScript, initialize) {
 				if (configFile) {
 					configStore = new ConfigStore(
 						configFile.videoPath,
-						localStorage.getItem('savePath'),
+						localStorage.getItem('savePath')!,
 						configFile.bodyPartsThreshold,
 						configFile.epochLength
 					);
 					$('#input_screen').css({ visibility: 'hidden' });
-					initialize();
+					initialize(configStore);
 				}
 			}
 		});
 	});
-};
+}
 
-function initLoadingScreen(savePath, videoPlayer) {
-	videoPlayer.src = localStorage.getItem('videoPath');
+function initLoadingScreen(savePath: string, videoPlayer: HTMLVideoElement) {
+	videoPlayer.src = localStorage.getItem('videoPath')!;
 	videoPlayer.load();
 	var interval = setInterval(() => {
 		if (videoPlayer.readyState >= 3) {

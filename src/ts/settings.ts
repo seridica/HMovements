@@ -1,5 +1,8 @@
-const { remote } = require('electron');
-exports.init = function (pythonScript, videoPlayer) {
+import { remote } from 'electron';
+import * as $ from 'jquery';
+import * as _ from 'lodash';
+import ConfigStore from './configstore';
+export function init(pythonScript: Function, videoPlayer: HTMLVideoElement, configStore: ConfigStore) {
 	let settings = configStore.mutableData;
 	let mutableSettingsList = [];
 	for (let key in settings) {
@@ -42,17 +45,19 @@ exports.init = function (pythonScript, videoPlayer) {
 	const saveSettings = () => {
 		let settings = configStore.mutableData;
 		let newSettings = {};
-		let threshold = {};
+		let threshold: any = {};
 		for (let key in settings) {
-			let setting = $('#' + key + '_setting').val();
-			if (isNaN(setting)) {
+			let setting = $('#' + key + '_setting')
+				.val()!
+				.toString();
+			if (Number(setting) === NaN) {
 				throw new Error('Please enter numbers only');
 			}
 			if (parseFloat(setting) < 0) {
 				throw new Error('Please enter positive numbers only');
 			}
 			if (key === 'epochLength') {
-				if (setting > videoPlayer.duration) {
+				if (Number(setting) > videoPlayer.duration) {
 					throw new Error('The Epoch Length must be shorter than the video duration');
 				}
 				newSettings = { epochLength: setting };
@@ -85,4 +90,4 @@ exports.init = function (pythonScript, videoPlayer) {
 			remote.dialog.showErrorBox(error.message, 'Please Try Again');
 		}
 	});
-};
+}

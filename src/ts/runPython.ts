@@ -1,6 +1,6 @@
-const { exec } = require('child_process');
-const constants = require('./constants');
-exports.pythonScript = (afterFunction, options = null) => {
+import { exec } from 'child_process';
+import * as constants from './constants';
+export default function pythonScript(afterFunction: any, options?: any) {
 	const videoPath = localStorage.getItem('videoPath');
 	const savePath = localStorage.getItem('savePath');
 	let openpose = 1;
@@ -9,7 +9,7 @@ exports.pythonScript = (afterFunction, options = null) => {
 	let armsThreshold = constants.bodyPartsThreshold.Arms;
 	let legsThreshold = constants.bodyPartsThreshold.Legs;
 	let feetThreshold = constants.bodyPartsThreshold.Feet;
-	if (options) {
+	if (options !== null) {
 		openpose = 0;
 		epochLength = options.epochLength;
 		headThreshold = options.Head;
@@ -26,4 +26,4 @@ exports.pythonScript = (afterFunction, options = null) => {
 		afterFunction
 	);
 	// const data = await fs.readFile('./json/test.json', 'utf8');
-};
+}

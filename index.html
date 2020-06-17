@@ -27,7 +27,7 @@
 						<span style="font-size: 4vh; margin-bottom: 2vh;">Step 2</span>
 						<img id="dest_btn" src="images/file.svg" width="100" height="100" style="cursor: pointer;" />
 						<span id="save_text">Select Location to Save Data</span>
-						<span id="save_description"></span><strong>(Ensure the folder is empty)</strong></span>
+						<span id="save_description"><strong>(Ensure the folder is empty)</strong></span>
 					</div>
 				</div>
 				<div id="continue_container">
@@ -75,16 +75,18 @@
 			<div id="settings_content" class="shadow-3">
 				<span style="text-align: center; font-size: 2vw; margin-top: 5px;">Settings</span>
 				<div id="settings_container"></div>
-				<div id="save_btn" class="grow br-pill ba ph3 black">
+				<span id="save_btn" style="font-size: 0.8vw;" class="grow br-pill ba ph3 black">
 					Save Settings
-				</div>
+				</span>
 				<span style="font-size: 0.8vw;">Note: Changing any of the settings above will take some time to reload.</span>
-				<img id="close_btn" src="./images/close.svg" />
+				<img id="close_btn" src="images/close.svg" />
 			</div>
 		</div>
 		<link rel="stylesheet" href="css/index.css" />
 		<link rel="stylesheet" href="node_modules/tachyons/css/tachyons.min.css" />
 		<link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css" />
-		<script src="./index.js"></script>
+		<script>
+			require('./dist/index.js');
+		</script>
 	</body>
 </html>
