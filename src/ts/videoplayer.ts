@@ -1,7 +1,8 @@
-const { formatVideoTime, getVideoName } = require('./util');
-
-function initVideoPlayers(videoPlayer, skeletonPlayer) {
-	const videoPath = localStorage.getItem('videoPath');
+import { formatVideoTime, getVideoName } from './util';
+import ConfigStore from './configstore';
+import * as $ from 'jquery';
+function initVideoPlayers(videoPlayer: HTMLVideoElement, skeletonPlayer: HTMLVideoElement, configStore: ConfigStore) {
+	const videoPath = localStorage.getItem('videoPath')!;
 	const savePath = localStorage.getItem('savePath');
 	videoPlayer.src = configStore.videoPath;
 	skeletonPlayer.src = savePath + `/${getVideoName(videoPath)}.mp4`;
@@ -20,12 +21,12 @@ function initVideoPlayers(videoPlayer, skeletonPlayer) {
 	checkVideo();
 }
 
-function initVideoControls(videoPlayer, skeletonPlayer) {
+function initVideoControls(videoPlayer: HTMLVideoElement, skeletonPlayer: HTMLVideoElement) {
 	$('#play_btn').click(() => {
 		videoPlayer.play();
 		skeletonPlayer.play();
 		videoPlayer.ontimeupdate = () => {
-			const barWidth = $('#progress_bar_container').width();
+			const barWidth = $('#progress_bar_container').width()!;
 			const percentage = videoPlayer.currentTime / videoPlayer.duration;
 			$('#progress_bar').css({ width: percentage * barWidth });
 			$('#video_time').text(formatVideoTime(videoPlayer.currentTime) + ' / ' + formatVideoTime(videoPlayer.duration));
@@ -48,8 +49,8 @@ function initVideoControls(videoPlayer, skeletonPlayer) {
 	var clicking = false;
 	$('#progress_bar_container').mousedown((e) => {
 		clicking = true;
-		const barWidth = $('#progress_bar_container').width();
-		const posX = (e.pageX - $('#progress_bar_container').offset().left) / barWidth;
+		const barWidth = $('#progress_bar_container').width()!;
+		const posX = (e.pageX - $('#progress_bar_container').offset()!.left) / barWidth;
 		$('#progress_bar').css({ width: posX * barWidth });
 		videoPlayer.currentTime = videoPlayer.duration * posX;
 		skeletonPlayer.currentTime = videoPlayer.duration * posX;
@@ -58,8 +59,8 @@ function initVideoControls(videoPlayer, skeletonPlayer) {
 
 	$('#progress_bar_container').mousemove((e) => {
 		if (clicking === true) {
-			const barWidth = $('#progress_bar_container').width();
-			const posX = (e.pageX - $('#progress_bar_container').offset().left) / barWidth;
+			const barWidth = $('#progress_bar_container').width()!;
+			const posX = (e.pageX - $('#progress_bar_container').offset()!.left) / barWidth;
 			$('#progress_bar').css({ width: posX * barWidth });
 			videoPlayer.currentTime = videoPlayer.duration * posX;
 			skeletonPlayer.currentTime = videoPlayer.duration * posX;
@@ -72,7 +73,7 @@ function initVideoControls(videoPlayer, skeletonPlayer) {
 	});
 }
 
-exports.init = function (videoPlayer, skeletonPlayer) {
-	initVideoPlayers(videoPlayer, skeletonPlayer);
+export function init(videoPlayer: HTMLVideoElement, skeletonPlayer: HTMLVideoElement, configStore: ConfigStore) {
+	initVideoPlayers(videoPlayer, skeletonPlayer, configStore);
 	initVideoControls(videoPlayer, skeletonPlayer);
-};
+}

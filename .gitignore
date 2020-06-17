@@ -5,7 +5,6 @@ py/output
 py/__pycache__
 py/build
 py/processing_script.spec
-json
 openpose_cpu
 ffmpeg
 images

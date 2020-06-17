@@ -1,0 +1,16 @@
+{
+	"compilerOptions": {
+		"target": "ES6",
+		"module": "commonjs",
+		"outDir": "dist",
+		"strictNullChecks": true,
+		"strict": true,
+		"baseUrl": ".",
+		"sourceMap": true,
+		"paths": {
+			"*": ["node_modules/*"]
+		}
+	},
+	"compileOnSave": true,
+	"include": ["src/**/*"]
+}

@@ -1,12 +1,14 @@
-const fs = require('fs');
-const { bodyPartsThreshold, epochLength } = require('./constants');
-const processNewFile = (err, data, initFunction) => {
+import * as fs from 'fs';
+import * as _ from 'lodash';
+import * as $ from 'jquery';
+import { bodyPartsThreshold, epochLength } from './constants';
+const processNewFile = (err: Error, data: string, initFunction: () => void) => {
 	if (err) console.log(err);
 	processHelper(data, writeToFile);
 	initFunction();
 };
 
-const processNewSetting = (err, data, refreshCanvas) => {
+const processNewSetting = (err: Error, data: string, refreshCanvas: () => void) => {
 	if (err) console.log(err);
 	processHelper(data, updateFile);
 	refreshCanvas();
@@ -14,28 +16,29 @@ const processNewSetting = (err, data, refreshCanvas) => {
 	$('#main_content').css({ visibility: 'visible' });
 };
 
-const processHelper = (data, fn) => {
+const processHelper = (data: any, fn: (savePath: string, videoPath: string, dataString: string) => void) => {
 	let dataString = data.toString();
 	let dataParsed = dataString.slice(dataString.indexOf('{'));
 	localStorage.setItem('videoData', dataParsed);
-	const savePath = localStorage.getItem('savePath');
-	const videoPath = localStorage.getItem('videoPath');
+	const savePath = localStorage.getItem('savePath')!;
+	const videoPath = localStorage.getItem('videoPath')!;
 	fn(savePath, videoPath, dataString);
 };
 
-const getVideoName = (videoPath) => {
+const getVideoName = (videoPath: string): string | null => {
 	if (videoPath) {
-		const videoWithExt = _.last(videoPath.split('\\'));
-		const videoName = _.first(videoWithExt.split('.'));
+		const videoWithExt: string = _.last(videoPath.split('\\'))!;
+		const videoName = _.first(videoWithExt.split('.'))!;
 		return videoName;
 	}
+	return null;
 };
 
-const updateFile = (savePath, videoPath, data) => {
+const updateFile = (savePath: string, videoPath: string, data: string) => {
 	fs.writeFileSync(`${savePath}/data.json`, data, 'utf8');
 };
 
-const writeToFile = (savePath, videoPath, data) => {
+const writeToFile = (savePath: string, videoPath: string, data: string) => {
 	const json = {
 		videoPath,
 		bodyPartsThreshold,
@@ -45,9 +48,9 @@ const writeToFile = (savePath, videoPath, data) => {
 	fs.writeFileSync(`${savePath}/config.json`, JSON.stringify(json), 'utf8');
 };
 
-const importExistingFile = (savePath) => {
+const importExistingFile = (savePath: string) => {
 	try {
-		let configFile = fs.readFileSync(`${savePath}/config.json`, 'utf8');
+		let configFile: any = fs.readFileSync(`${savePath}/config.json`, 'utf8');
 		configFile = JSON.parse(configFile);
 		const videoPath = configFile.videoPath;
 		const videoData = fs.readFileSync(`${savePath}/data.json`, 'utf8');
@@ -60,7 +63,7 @@ const importExistingFile = (savePath) => {
 		return null;
 	}
 };
-const formatVideoTime = (time) => {
+const formatVideoTime = (time: number) => {
 	var hours = Math.floor(time / 3600);
 	var minutes = Math.floor((time % 3600) / 60);
 	var seconds = Math.floor((time % 3600) % 60);
@@ -71,11 +74,11 @@ const formatVideoTime = (time) => {
 	return display;
 };
 
-const calculateVideoDurationByEpoch = (epoch, duration) => {
+const calculateVideoDurationByEpoch = (epoch: number, duration: number): number => {
 	return Math.floor(duration / epoch) * epoch;
 };
 
-const filesSoFar = (savePath) => {
+const filesSoFar = (savePath: string): number => {
 	try {
 		const files = fs.readdirSync(savePath);
 		return files.length;
@@ -85,7 +88,7 @@ const filesSoFar = (savePath) => {
 	}
 };
 
-module.exports = {
+export {
 	processNewSetting,
 	updateFile,
 	processNewFile,

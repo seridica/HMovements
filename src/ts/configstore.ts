@@ -1,6 +1,11 @@
-const fs = require('fs');
-class ConfigStore {
-	constructor(videoPath, savePath, threshold, epochLength) {
+import * as fs from 'fs';
+export default class ConfigStore {
+	private _videoPath: string;
+	private _savePath: string;
+	private _threshold: any;
+	private _epochLength: number;
+
+	constructor(videoPath: string, savePath: string, threshold: any, epochLength: any) {
 		this._videoPath = videoPath;
 		this._savePath = savePath;
 		this._threshold = threshold;
@@ -22,10 +27,7 @@ class ConfigStore {
 		return this._videoPath;
 	}
 
-	set(key, val) {
-		this[key] = val;
-	}
-	saveData(value) {
+	saveData(value: any) {
 		this._threshold = value.threshold;
 		this._epochLength = value.epochLength;
 		this.writeSettings();
@@ -40,5 +42,3 @@ class ConfigStore {
 		fs.writeFileSync(`${this._savePath}/config.json`, JSON.stringify(settings), 'utf8');
 	}
 }
-
-module.exports = ConfigStore;
