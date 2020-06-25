@@ -10,3 +10,5 @@ ffmpeg
 images
 dist
 processing_script.exe
+src/test/testfiles
+src/test/testfiles2

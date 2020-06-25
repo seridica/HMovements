@@ -8,14 +8,15 @@ function createWindow() {
 		height: 600,
 		webPreferences: {
 			nodeIntegration: true,
+			devTools: false,
 		},
 		autoHideMenuBar: true,
 	});
 
 	// and load the index.html of the app.
 	win.loadFile(path.join(__dirname, '../index.html'));
+	win.maximize();
 	// Open the DevTools.
-	win.webContents.openDevTools();
 }
 
 // This method will be called when Electron has finished

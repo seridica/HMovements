@@ -2,12 +2,13 @@
 	"name": "hmovements",
 	"version": "1.0.0",
 	"description": "",
+	"main": "./dist/main.js",
 	"scripts": {
 		"build": "tsc",
-		"start": "npm run build && electron ./dist/main.js",
-		"dist-mac": "npm run build && electron-packager ./dist/main.js mac --platform=darwin",
-		"dist-win": "npm run build && electron-packager ./dist/main.js win --platform=win32",
-		"test": "echo \"Error: no test specified\" && exit 1"
+		"start": "npm run build && electron .",
+		"dist-mac": "npm run build && electron-packager . mac --platform=darwin",
+		"dist-win": "npm run build && electron-packager . win --platform=win32",
+		"test": "jest"
 	},
 	"repository": {
 		"type": "git",
@@ -21,12 +22,15 @@
 	},
 	"homepage": "https://github.com/seridica/HMovements#readme",
 	"devDependencies": {
+		"@types/chart.js": "^2.9.21",
 		"@types/chartjs-plugin-annotation": "^0.5.0",
+		"@types/jest": "^26.0.0",
 		"@types/jquery": "^3.3.38",
 		"@types/lodash": "^4.14.155",
-		"@types/chart.js": "^2.9.21",
 		"electron": "^8.2.5",
 		"electron-packager": "^14.2.1",
+		"jest": "^26.0.1",
+		"ts-jest": "^26.1.1",
 		"typescript": "^3.9.5"
 	},
 	"dependencies": {

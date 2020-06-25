@@ -1,29 +1,33 @@
 import * as $ from 'jquery';
 import * as _ from 'lodash';
-import ConfigStore from './ts/configstore';
+import type ConfigStore from './ts/configstore';
 import pythonScript from './ts/runPython';
 import * as util from './ts/util';
 import Diagram from './ts/diagrams';
-import * as video from './ts/videoplayer';
-import * as settings from './ts/settings';
-import * as startscreen from './ts/startscreen';
+import Video from './ts/videoplayer';
+import Settings from './ts/settings';
+import Startscreen from './ts/startscreen';
 (function () {
-	const videoPlayer: HTMLVideoElement = <HTMLVideoElement>$('#main_player')[0];
-	const skeletonPlayer: HTMLVideoElement = <HTMLVideoElement>$('#skeleton_player')[0];
-	const init = (configStore: ConfigStore) => {
+	const videoPlayer: HTMLVideoElement = $('#main_player')[0] as HTMLVideoElement;
+	const skeletonPlayer: HTMLVideoElement = $('#skeleton_player')[0] as HTMLVideoElement;
+
+	// Main initialization function that calls the initialization functions in other modules.
+	const init = (configStore: ConfigStore): void => {
 		const diagram = Diagram(videoPlayer, configStore);
-		video.init(videoPlayer, skeletonPlayer, configStore);
-		diagram.init(false);
-		settings.init(
+		const videoControl = Video(videoPlayer, skeletonPlayer, configStore);
+		const settings = Settings(
 			() => {
-				pythonScript((err: Error, data: any) => {
+				pythonScript((err: Error, data: string) => {
 					util.processNewSetting(err, data, () => diagram.refreshCanvas());
 				}, configStore.mutableData);
 			},
 			videoPlayer,
 			configStore
 		);
+		videoControl.init();
+		diagram.init(false);
+		settings.init();
 	};
-
-	startscreen.init(pythonScript, init, videoPlayer);
+	const startscreen = Startscreen(pythonScript, init, videoPlayer);
+	startscreen.init();
 })();

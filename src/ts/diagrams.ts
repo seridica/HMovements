@@ -1,11 +1,13 @@
-import { Chart } from 'chart.js';
-import { bodyParts, fps } from './constants';
+import { Chart, ChartConfiguration } from 'chart.js';
+import { bodyParts, fps, IVideoData, IBodyPartDetail } from './constants';
 import * as ChartAnnotation from 'chartjs-plugin-annotation';
 import * as util from './util';
 import ConfigStore from './configstore';
 import * as $ from 'jquery';
+
 var diagram = function (videoPlayer: HTMLVideoElement, configStore: ConfigStore) {
-	function getChartOptions(part: any, data: any, thresholdValue: any, backgroundColor: any, epochLength: any) {
+	// Generates the chart options to be used by chart.js.
+	function getChartOptions(part: string, data: { x: number; y: number }[], thresholdValue: number, backgroundColor: string[], epochLength: number) {
 		const options: any = {
 			type: 'WithLine',
 			data: {
@@ -94,19 +96,21 @@ var diagram = function (videoPlayer: HTMLVideoElement, configStore: ConfigStore)
 		return options;
 	}
 
+	// Initializes the diagram container by inserting blank canvas into it.
 	function initializeCanvas() {
-		bodyParts.forEach((part) => {
-			const partId = part.replace(' ', '');
+		for (let key in bodyParts) {
 			$('#diagram_container').append(`
-			<div id="${partId}_diagram_container" >
-				<canvas id="${partId}_diagram"  width=300 height=110></canvas>
+			<div id="${key}_diagram_container" >
+				<canvas id="${key}_diagram"  width=300 height=110></canvas>
 			</div>
 		`);
-		});
+		}
 	}
 
+	// Draws canvas on the blank canvas inserted in the function initalizeCanvas.
 	function drawCanvas() {
-		const videoData = JSON.parse(localStorage.getItem('videoData')!);
+		if (localStorage.getItem('videoData') === null) return;
+		const videoData: IVideoData = JSON.parse(localStorage.getItem('videoData')!);
 		const motionData = videoData.motion;
 		const epochData = videoData.epoch;
 		Chart.defaults.WithLine = Chart.defaults.line;
@@ -152,9 +156,10 @@ var diagram = function (videoPlayer: HTMLVideoElement, configStore: ConfigStore)
 				}
 			},
 		});
-		bodyParts.forEach((part) => {
-			const partData = motionData[part.replace(' ', '')];
-			const partEpochData = epochData[part.replace(' ', '')];
+		for (let key in bodyParts) {
+			let part = bodyParts[key].name;
+			const partData = motionData[key] as number[];
+			const partEpochData = epochData[key] as boolean[];
 			var thresholdValue = 0;
 			if (part.includes('Head')) {
 				thresholdValue = configStore.mutableData['Head'];
@@ -165,15 +170,15 @@ var diagram = function (videoPlayer: HTMLVideoElement, configStore: ConfigStore)
 			} else {
 				thresholdValue = configStore.mutableData['Feet'];
 			}
-			const chartBackgroundColor = partEpochData.map((epoch: boolean) => {
+			const chartBackgroundColor: string[] = partEpochData.map((epoch: boolean) => {
 				return epoch ? 'rgba(139, 240, 193, 0.2)' : 'rgba(255, 99, 132, 0.1)';
 			});
-			let dataPoints = [];
+			let dataPoints: { x: number; y: number }[] = [];
 			for (let i = 0; i < partData.length; i++) {
 				dataPoints.push({ x: i / fps, y: partData[i] });
 			}
 			let partId = part.replace(' ', '') + '_diagram';
-			const canvas = <HTMLCanvasElement>document.getElementById(partId)!;
+			const canvas = document.getElementById(partId) as HTMLCanvasElement;
 			const motionCtx = canvas.getContext('2d')!;
 			const chart = new Chart(motionCtx, getChartOptions(part, dataPoints, thresholdValue, chartBackgroundColor, configStore.epochLength));
 			let interval: NodeJS.Timeout;
@@ -186,42 +191,37 @@ var diagram = function (videoPlayer: HTMLVideoElement, configStore: ConfigStore)
 			$('#pause_btn').click(() => {
 				if (interval) clearInterval(interval);
 			});
-		});
+		}
 	}
 
+	// Called when the settings is changed. Reinitializes and redraws the canvas to match the new settings.
 	function refreshCanvas() {
-		bodyParts.forEach((part) => {
-			const id = part.replace(' ', '');
-			if ($('#' + id).data('toggle')) {
-				$('#' + id).click();
+		for (let key in bodyParts) {
+			if ($('#' + key).data('toggle')) {
+				$('#' + key).click();
 			}
-		});
+		}
 		init(true);
 	}
 
+	// Calls initializeCanvas and drawCanvas and also inserts the buttons for body parts into the document body.
 	function init(isNewSettings: boolean) {
-		const partsTab = $('#partsTab');
 		initializeCanvas();
 		drawCanvas();
 
-		$('#parts_btn').click(() => {
-			partsTab.css('display') === 'none' ? partsTab.css({ display: 'block' }) : partsTab.css({ display: 'none' });
-		});
-
 		if (isNewSettings === false) {
-			const partsFolder = $('#parts_btn_folder');
-			bodyParts.map((part) => {
-				partsFolder.append(`<div id=${part.replace(' ', '')} data-toggle="false" class="dim, parts" >${part}</div>`);
-			});
+			const partsFolder: JQuery<HTMLDivElement> = $('#parts_btn_folder');
+			for (let key in bodyParts) {
+				partsFolder.append(`<div id=${key} data-toggle="false" class="dim, parts" >${bodyParts[key].name}</div>`);
+			}
 		}
 
-		bodyParts.forEach((part) => {
-			const id = part.replace(' ', '');
-			let partDiagram = $('#' + id + '_diagram_container');
-			let bodyHtml = partDiagram.detach();
-			$('#' + id).off('click');
-			$('#' + id).click(function () {
-				let color = '#ebebeb';
+		for (let key in bodyParts) {
+			let partDiagram: JQuery<HTMLDivElement> = $('#' + key + '_diagram_container');
+			let bodyHtml: JQuery<HTMLDivElement> = partDiagram.detach();
+			$('#' + key).off('click');
+			$('#' + key).click(function () {
+				let color: string = '#ebebeb';
 				$(this).data({ toggle: !$(this).data('toggle') });
 				if (!$(this).data('toggle')) {
 					color = 'black';
@@ -231,7 +231,7 @@ var diagram = function (videoPlayer: HTMLVideoElement, configStore: ConfigStore)
 				}
 				$(this).css({ color, 'border-color': color });
 			});
-		});
+		}
 	}
 
 	return {
