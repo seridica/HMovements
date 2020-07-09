@@ -4,7 +4,7 @@ import * as util from './util';
 import ConfigStore from './configstore';
 import * as $ from 'jquery';
 
-export default function startscreen(pythonScript: Function, initialize: Function, videoPlayer: HTMLVideoElement) {
+export default function startscreen(processVideo: Function, initialize: Function, videoPlayer: HTMLVideoElement) {
 	// Initializes the startscreen by setting up the event handler functions for the buttons.
 	function init() {
 		let configStore: ConfigStore | null = null;
@@ -56,7 +56,7 @@ export default function startscreen(pythonScript: Function, initialize: Function
 				$('#loading').css({ visibility: 'visible' });
 				configStore = new ConfigStore(localStorage.getItem('videoPath')!, savePath, generalThresholds, epochLength);
 				initLoadingScreen(savePath, videoPlayer);
-				pythonScript((err: Error, data: string) => {
+				processVideo((err: Error, data: string) => {
 					util.processNewFile(err, data, () => initialize(configStore));
 				});
 			} else {

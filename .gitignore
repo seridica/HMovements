@@ -12,3 +12,4 @@ dist
 processing_script.exe
 src/test/testfiles
 src/test/testfiles2
+src/py/haarcascade
