@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as _ from 'lodash';
 import * as $ from 'jquery';
 import { generalThresholds, epochLength } from './constants';
+import * as path from 'path';
 
 // Calls processHelper with writeToFile to process video uploaded for the first time.
 const processNewFile = (err: any, data: string, initFunction: () => void) => {
@@ -108,6 +109,19 @@ const filesSoFar = (savePath: string): number => {
 		console.log('not yet');
 		return 0;
 	}
+};
+
+const cleanUpTempFiles = (directory: string) => {
+	fs.readdir(directory, (err, files) => {
+		if (err) throw err;
+		for (let file of files) {
+			if (path.extname(file) === '.avi') {
+				fs.unlink(path.join(directory, file), (err) => {
+					if (err) console.error(err);
+				});
+			}
+		}
+	});
 };
 
 export { processNewSetting, processNewFile, getVideoName, importExistingFile, formatVideoTime, calculateVideoDurationByEpoch, filesSoFar };

@@ -1,10 +1,10 @@
 import { Chart, ChartConfiguration } from 'chart.js';
+import { remote, BrowserWindow } from 'electron';
 import { bodyParts, fps, IVideoData, IBodyPartDetail } from './constants';
 import * as ChartAnnotation from 'chartjs-plugin-annotation';
 import * as util from './util';
 import ConfigStore from './configstore';
 import * as $ from 'jquery';
-
 var diagram = function (videoPlayer: HTMLVideoElement, configStore: ConfigStore) {
 	// Generates the chart options to be used by chart.js.
 	function getChartOptions(part: string, data: { x: number; y: number }[], thresholdValue: number, backgroundColor: string[], epochLength: number) {
@@ -25,7 +25,6 @@ var diagram = function (videoPlayer: HTMLVideoElement, configStore: ConfigStore)
 			},
 			plugins: [ChartAnnotation],
 			options: {
-				events: [],
 				annotation: {
 					annotations: [
 						{
@@ -47,7 +46,7 @@ var diagram = function (videoPlayer: HTMLVideoElement, configStore: ConfigStore)
 					],
 				},
 				tooltips: {
-					enabled: false,
+					enabled: true,
 				},
 				animation: {
 					duration: 0,
@@ -100,8 +99,9 @@ var diagram = function (videoPlayer: HTMLVideoElement, configStore: ConfigStore)
 	function initializeCanvas() {
 		for (let key in bodyParts) {
 			$('#diagram_container').append(`
-			<div id="${key}_diagram_container" >
-				<canvas id="${key}_diagram"  width=300 height=110></canvas>
+			<div id="${key}_diagram_container" style="position: relative;">
+				<input id="${key}_diagram_popout" type="image" title="Pop Out" style="width: 1.5vw; height: 1.5vh; outline: none; position: absolute; right: 2%; top: 5%;" src="images/popout.svg" />
+				<canvas id="${key}_diagram"  width=300 height=100></canvas>
 			</div>
 		`);
 		}
@@ -162,13 +162,13 @@ var diagram = function (videoPlayer: HTMLVideoElement, configStore: ConfigStore)
 			const partEpochData = epochData[key] as boolean[];
 			var thresholdValue = 0;
 			if (part.includes('Head')) {
-				thresholdValue = configStore.mutableData['Head'];
+				thresholdValue = configStore.epochThresholdData['Head'];
 			} else if (part.includes('Arm')) {
-				thresholdValue = configStore.mutableData['Arms'];
+				thresholdValue = configStore.epochThresholdData['Arms'];
 			} else if (part.includes('Leg')) {
-				thresholdValue = configStore.mutableData['Legs'];
+				thresholdValue = configStore.epochThresholdData['Legs'];
 			} else {
-				thresholdValue = configStore.mutableData['Feet'];
+				thresholdValue = configStore.epochThresholdData['Feet'];
 			}
 			const chartBackgroundColor: string[] = partEpochData.map((epoch: boolean) => {
 				return epoch ? 'rgba(139, 240, 193, 0.2)' : 'rgba(255, 99, 132, 0.1)';
@@ -186,9 +186,11 @@ var diagram = function (videoPlayer: HTMLVideoElement, configStore: ConfigStore)
 				interval = setInterval(() => {
 					if (videoPlayer.ended) clearInterval(interval);
 					chart.update();
+					chart.options.tooltips!.enabled = false;
 				}, 500);
 			});
 			$('#pause_btn').click(() => {
+				chart.options.tooltips!.enabled = true;
 				if (interval) clearInterval(interval);
 			});
 		}
@@ -212,24 +214,31 @@ var diagram = function (videoPlayer: HTMLVideoElement, configStore: ConfigStore)
 		if (isNewSettings === false) {
 			const partsFolder: JQuery<HTMLDivElement> = $('#parts_btn_folder');
 			for (let key in bodyParts) {
-				partsFolder.append(`<div id=${key} data-toggle="false" class="dim, parts" >${bodyParts[key].name}</div>`);
+				partsFolder.append(`<div id=${key} data-toggle="false" class="dim parts" >${bodyParts[key].name}</div>`);
 			}
 		}
 
 		for (let key in bodyParts) {
-			let partDiagram: JQuery<HTMLDivElement> = $('#' + key + '_diagram_container');
-			let bodyHtml: JQuery<HTMLDivElement> = partDiagram.detach();
+			let partDiagramContainer: JQuery<HTMLDivElement> = $('#' + key + '_diagram_container');
+			let partDiagram: JQuery<HTMLInputElement> = $('#' + key + '_diagram');
+			let popout: JQuery<HTMLInputElement> = $('#' + key + '_diagram_popout');
+			let bodyHtml: JQuery<HTMLDivElement> = partDiagramContainer.detach();
 			$('#' + key).off('click');
 			$('#' + key).click(function () {
 				let color: string = '#ebebeb';
 				$(this).data({ toggle: !$(this).data('toggle') });
 				if (!$(this).data('toggle')) {
 					color = 'black';
-					partDiagram.detach();
+					partDiagramContainer.detach();
 				} else {
 					bodyHtml.appendTo('#diagram_container');
 				}
 				$(this).css({ color, 'border-color': color });
+			});
+
+			popout.click(() => {
+				const window: BrowserWindow = new remote.BrowserWindow();
+				window.loadFile('diagram.html');
 			});
 		}
 	}

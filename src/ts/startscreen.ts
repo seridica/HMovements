@@ -13,7 +13,7 @@ export default function startscreen(processVideo: Function, initialize: Function
 		};
 		$('#input_btn').click(() => {
 			remote.dialog
-				.showOpenDialog({
+				.showOpenDialog(remote.getCurrentWindow(), {
 					properties: ['openFile'],
 					filters: [{ name: 'Videos', extensions: ['mp4'] }],
 				})
@@ -31,7 +31,7 @@ export default function startscreen(processVideo: Function, initialize: Function
 
 		$('#dest_btn').click(() => {
 			remote.dialog
-				.showOpenDialog({ properties: ['openDirectory'] })
+				.showOpenDialog(remote.getCurrentWindow(), { properties: ['openDirectory'] })
 				.then((result) => {
 					if (result.canceled === false) {
 						const path = result.filePaths[0];
@@ -52,7 +52,7 @@ export default function startscreen(processVideo: Function, initialize: Function
 		$('#continue_btn').click(() => {
 			const savePath = localStorage.getItem('savePath');
 			if (localStorage.getItem('videoPath') !== null && savePath !== null) {
-				$('#input_screen').css({ visibility: 'hidden' });
+				$('#input_screen').css({ display: 'none' });
 				$('#loading').css({ visibility: 'visible' });
 				configStore = new ConfigStore(localStorage.getItem('videoPath')!, savePath, generalThresholds, epochLength);
 				initLoadingScreen(savePath, videoPlayer);
@@ -65,7 +65,7 @@ export default function startscreen(processVideo: Function, initialize: Function
 		});
 
 		$('#import_btn').click(() => {
-			remote.dialog.showOpenDialog({ properties: ['openDirectory'] }).then(async (result) => {
+			remote.dialog.showOpenDialog(remote.getCurrentWindow(), { properties: ['openDirectory'] }).then(async (result) => {
 				if (result.canceled === false) {
 					const path = result.filePaths[0];
 					const configFile = util.importExistingFile(path);
@@ -74,9 +74,10 @@ export default function startscreen(processVideo: Function, initialize: Function
 							configFile.videoPath,
 							localStorage.getItem('savePath')!,
 							configFile.bodyPartsThreshold,
-							configFile.epochLength
+							configFile.epochLength,
+							configFile.skeletonPath
 						);
-						$('#input_screen').css({ visibility: 'hidden' });
+						$('#input_screen').css({ display: 'none' });
 						initialize(configStore);
 					}
 				}

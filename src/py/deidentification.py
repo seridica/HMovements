@@ -3,14 +3,17 @@ import numpy as np
 import sys
 import os
 from queue import Queue
+import subprocess
 
 haarcascadePath = os.path.join(os.getcwd(), 'src', 'py', 'haarcascade', 'haarcascade_frontalface_alt.xml')
+ffmpeg_path = os.path.join(os.getcwd(), "ffmpeg\\")
 
 faceCascade = cv.CascadeClassifier(haarcascadePath)
 xOffSetPercentage = 0.05
 yOffSetPercentage = 0.2
 videoPath = sys.argv[1]
-savePath = sys.argv[2]
+skeletonPath = sys.argv[2]
+savePath = sys.argv[3]
 
 def applyGaussianBlur(image, dimension):
 
@@ -34,24 +37,23 @@ def applyGaussianBlur(image, dimension):
     return imageWithBlur
 
 
-def readVideo(path):
-    cap = cv.VideoCapture(path)
-    frameWidth = int(cap.get(3))
-    frameHeight = int(cap.get(4))
+def init():
+    cap = cv.VideoCapture(videoPath)
     faceLocations = []
-    frames = []
     while cap.isOpened():
         ret, frame = cap.read()
         if ret == True:
             gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
             faces = faceCascade.detectMultiScale(gray, 1.1, 5)
             faceLocations.append(faces)
-            frames.append(frame)
         else:
             break
 
     cap.release()
-    writeVideo(frames, faceLocations, frameWidth, frameHeight)
+    writeVideo(videoPath, faceLocations, 'blurred.avi')
+    writeVideo(skeletonPath, faceLocations, 'blurred_skeleton.avi')
+    aviVideos = ['blurred', 'blurred_skeleton']
+    convertVideos(aviVideos)
     cv.destroyAllWindows()
 
 def filterThreshold(locations, filterPercentage, medianWidth, medianHeight):
@@ -121,43 +123,64 @@ def findMedian(faceLocations):
 
 
 
-def writeVideo(frames, faceLocations, frameWidth, frameHeight):
+
+def convertVideos(videos):
+    os.chdir(ffmpeg_path)
+    for video in videos:
+        subprocess.run([r'bin\ffmpeg.exe', '-i', fr'{savePath}\{video}.avi', fr'{savePath}\{video}.mp4'])
+
+def writeVideo(path, faceLocations, videoName):
+    cap = cv.VideoCapture(path)
+    frameWidth = int(cap.get(3))
+    frameHeight = int(cap.get(4))
+
     medianFaceSize = findMedian(faceLocations)
-    fourcc = cv.VideoWriter_fourcc(*'mp4v')
-    out = cv.VideoWriter(os.path.join(savePath, 'blurred.mp4'), fourcc, 30, (frameWidth,frameHeight))
+    fourcc = cv.VideoWriter_fourcc(*'MJPG')
+    out = cv.VideoWriter(os.path.join(savePath, videoName), fourcc, 30, (frameWidth,frameHeight))
     lastFaceLocation = None
     faceQueue = Queue()
+    cur = 0
 
-    for i in range(len(frames)):
-        frame = frames[i]
-        if type(faceLocations[i]) is not tuple:
-            numOfMissingFramesBetween = faceQueue.qsize()
+    while cap.isOpened():
+        ret, frame = cap.read()
+        if ret == True:
+            faces = faceLocations[cur]
+            cur += 1
 
-            while faceQueue.qsize() > 0:
-                estimatedArea = faceLocations[i]
-                frameInQueue = faceQueue.get()
+            if type(faces) is not tuple:
+                numOfMissingFramesBetween = faceQueue.qsize()
 
-                if lastFaceLocation is not None:
-                    frameNum = numOfMissingFramesBetween - faceQueue.qsize()
-                    estimatedArea = estimateArea(lastFaceLocation, faceLocations[i], medianFaceSize, frameNum, numOfMissingFramesBetween) 
+                while faceQueue.qsize() > 0:
+                    estimatedArea = faces
+                    frameInQueue = faceQueue.get()
 
-                for dimension in estimatedArea:
-                    frameInQueue = applyGaussianBlur(frameInQueue, dimension)
+                    if lastFaceLocation is not None:
+                        frameNum = numOfMissingFramesBetween - faceQueue.qsize()
+                        estimatedArea = estimateArea(lastFaceLocation, faces, medianFaceSize, frameNum, numOfMissingFramesBetween) 
 
-                out.write(frameInQueue)
+                    for dimension in estimatedArea:
+                        frameInQueue = applyGaussianBlur(frameInQueue, dimension)
 
-            lastFaceLocation = faceLocations[i]
-            filteredFaceLocation = filterThreshold(faceLocations[i], 0.1, medianFaceSize[0], medianFaceSize[1])
-            for dimension in filteredFaceLocation:
-                frame = applyGaussianBlur(frame, dimension)
-            out.write(frame)
+                    out.write(frameInQueue)
+
+                lastFaceLocation = faces
+                filteredFaceLocation = filterThreshold(faces, 0.1, medianFaceSize[0], medianFaceSize[1])
+                for dimension in filteredFaceLocation:
+                    frame = applyGaussianBlur(frame, dimension)
+                out.write(frame)
+            else:
+                faceQueue.put(frame)
+
         else:
-            faceQueue.put(frame)
+            break
 
     while faceQueue.qsize() > 0 and lastFaceLocation is not None:
         frame = faceQueue.get()
         frame = applyGaussianBlur(frame, lastFaceLocation)
         out.write(frame)
-    out.release()
 
-readVideo(videoPath)
+    out.release()
+    cap.release()
+
+
+init()

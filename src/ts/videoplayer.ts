@@ -1,17 +1,13 @@
-import { formatVideoTime, getVideoName } from './util';
+import { formatVideoTime } from './util';
 import type ConfigStore from './configstore';
 import * as $ from 'jquery';
+import * as path from 'path';
 
 export default function video(videoPlayer: HTMLVideoElement, skeletonPlayer: HTMLVideoElement, configStore: ConfigStore) {
 	// Initializes the video players and makes sure the video are loaded properly before showing the main screen.
 	function initVideoPlayers(): void | never {
 		if (videoPlayer === null || skeletonPlayer === null || configStore === null) throw new Error('Some');
-		const videoPath = localStorage.getItem('videoPath')!;
-		const savePath = localStorage.getItem('savePath');
-		videoPlayer.src = configStore.videoPath;
-		skeletonPlayer.src = savePath + `/${getVideoName(videoPath)}.mp4`;
-		videoPlayer.load();
-		skeletonPlayer.load();
+		loadVideos();
 		const checkVideo = () => {
 			var interval = setInterval(() => {
 				if (videoPlayer.readyState >= 3) {
@@ -78,11 +74,19 @@ export default function video(videoPlayer: HTMLVideoElement, skeletonPlayer: HTM
 		});
 	}
 
+	function loadVideos() {
+		videoPlayer.src = configStore.videoPath;
+		skeletonPlayer.src = configStore.skeletonPath;
+		videoPlayer.load();
+		skeletonPlayer.load();
+	}
+
 	function init() {
 		initVideoPlayers();
 		initVideoControls();
 	}
 	return {
+		loadVideos,
 		init,
 	};
 }

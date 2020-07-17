@@ -2,14 +2,18 @@ import { remote } from 'electron';
 import * as $ from 'jquery';
 import * as _ from 'lodash';
 import type ConfigStore from './configstore';
-import { IGeneralThresholds } from './constants';
+import { IGeneralThresholds, epochLength } from './constants';
 
-export default function settings(pythonScript: Function, videoPlayer: HTMLVideoElement, configStore: ConfigStore) {
+export default function settings(pythonScript: Function, videoPlayer: HTMLVideoElement, configStore: ConfigStore, videoControl: any) {
 	// Refreshes settings when the user decides not to save.
 	function refreshSettings() {
-		let settings = configStore.mutableData;
+		let settings = configStore.epochThresholdData;
 		for (let key in settings) {
 			$('#' + key + '_setting').val(settings[key]);
+		}
+		let currentConfig: any = configStore.directoryData;
+		for (let key in currentConfig) {
+			$('#' + _.snakeCase(key) + '_value').text(currentConfig[key]);
 		}
 	}
 
@@ -29,34 +33,55 @@ export default function settings(pythonScript: Function, videoPlayer: HTMLVideoE
 
 	// Checks whether the new settings are valid then writing to the configStore.
 	function saveSettings() {
-		let settings = configStore.mutableData;
 		let newSettings: any = {};
-		let threshold: IGeneralThresholds = {};
-		for (let key in settings) {
-			let setting = $('#' + key + '_setting').val() as string;
-			let settingNum = Number(setting);
-			if (Number.isNaN(settingNum)) {
-				throw new Error('Please enter numbers only');
-			}
-			if (settingNum <= 0) {
-				throw new Error('Please enter positive numbers only');
-			}
-			if (key === 'epochLength') {
-				if (settingNum > videoPlayer.duration) {
-					throw new Error('The Epoch Length must be shorter than the video duration');
+		let hasEpochandThresholdChanged = false;
+		function saveEpochAndThresholdSettings() {
+			let currentConfig = configStore.epochThresholdData;
+			let threshold: IGeneralThresholds = {};
+			for (let key in currentConfig) {
+				let setting = $('#' + key + '_setting').val() as string;
+				let settingNum = Number(setting);
+				if (Number.isNaN(settingNum)) {
+					throw new Error('Please enter numbers only');
 				}
-				newSettings = { epochLength: setting };
-			} else {
-				threshold[key] = settingNum;
+				if (settingNum <= 0) {
+					throw new Error('Please enter positive numbers only');
+				}
+				if (key === 'epochLength') {
+					if (settingNum > videoPlayer.duration) {
+						throw new Error('The Epoch Length must be shorter than the video duration');
+					}
+					hasEpochandThresholdChanged = hasEpochandThresholdChanged || currentConfig.epochLength != settingNum;
+					newSettings = { epochLength: setting };
+				} else {
+					hasEpochandThresholdChanged = hasEpochandThresholdChanged || currentConfig[key] !== settingNum;
+					threshold[key] = settingNum;
+				}
 			}
+			newSettings = _.assign(newSettings, { threshold });
 		}
-		newSettings = _.assign(newSettings, { threshold });
+
+		function saveDirectorySettings() {
+			let currentConfig = configStore.directoryData;
+			let paths: any = {};
+			for (let key in currentConfig) {
+				let setting = _.trim($('#' + _.snakeCase(key) + '_value').text());
+				paths[key] = setting;
+			}
+
+			newSettings = _.assign(newSettings, paths);
+		}
+		saveEpochAndThresholdSettings();
+		saveDirectorySettings();
 		configStore.saveData(newSettings);
+		videoControl.loadVideos();
+		console.log(hasEpochandThresholdChanged);
+		return hasEpochandThresholdChanged;
 	}
 
 	// Inserts the setting menu into the document body.
 	function init() {
-		let settings = configStore.mutableData;
+		let settings = configStore.epochThresholdData;
 		let mutableSettingsList = [];
 		for (let key in settings) {
 			mutableSettingsList.push(`
@@ -72,7 +97,7 @@ export default function settings(pythonScript: Function, videoPlayer: HTMLVideoE
 		`);
 		}
 		mutableSettingsList.map((i) => {
-			$('#settings_container').append(i);
+			$('#epoch_threshold_settings').append(i);
 		});
 
 		$('#settings_btn').click(() => {
@@ -87,15 +112,77 @@ export default function settings(pythonScript: Function, videoPlayer: HTMLVideoE
 
 		$('#save_btn').click(() => {
 			try {
-				saveSettings();
+				const didEpochAndThresholdChange = saveSettings();
 				exitSettings();
-				$('#loading').css({ visibility: 'visible' });
-				$('#main_content').css({ visibility: 'hidden' });
-				pythonScript();
+				if (didEpochAndThresholdChange) {
+					// $('#loading').css({ visibility: 'visible' });
+					// $('#main_content').css({ visibility: 'hidden' });
+					// pythonScript();
+				}
 			} catch (error) {
 				remote.dialog.showErrorBox(error.message, 'Please Try Again');
 			}
 		});
+
+		$('#epoch_threshold_toggle').click(function () {
+			if (!$(this).data('toggle')) {
+				toggle($(this), true, $('#epoch_threshold_settings'));
+				toggle($('#directory_toggle'), false, $('#directory_settings'));
+			}
+		});
+
+		$('#directory_toggle').click(function () {
+			if (!$(this).data('toggle')) {
+				toggle($(this), true, $('#directory_settings'));
+				toggle($('#epoch_threshold_toggle'), false, $('#epoch_threshold_settings'));
+			}
+		});
+
+		const toggle = function (button: JQuery<HTMLElement>, toggleOn: boolean, content: JQuery<HTMLElement>) {
+			let color: string = '#ebebeb';
+			let display: string = 'flex';
+			if (!toggleOn) {
+				color = 'black';
+				display = 'none';
+			}
+			button.data({ toggle: toggleOn });
+			button.css({ color, 'border-color': color });
+			content.css({ display });
+		};
+
+		let directoryData: any = configStore.directoryData;
+		for (let key in directoryData) {
+			let dirID = _.snakeCase(key);
+			$('#directory_settings').append(
+				`<div style="flex: 1; align-items: center;">
+					<label style="font-size: 1vw; text-align: center;">${_.startCase(key)}: </label>
+					<br />
+					<div style="display: flex;">
+						<span class="directory_paths" id="${dirID}_value">
+							${directoryData[key]}
+						</span>
+						<img id="edit_${dirID}" class="dim" style="cursor: pointer;" src="images/link.svg" />
+					</div>
+				</div>`
+			);
+
+			$('#edit_' + dirID).click(() => {
+				remote.dialog
+					.showOpenDialog(remote.getCurrentWindow(), {
+						properties: ['openFile'],
+						filters: [{ name: 'Videos', extensions: ['mp4'] }],
+					})
+					.then((result) => {
+						if (result.canceled === false) {
+							const path = result.filePaths[0];
+							$('#' + dirID + '_value').text(path);
+						}
+					})
+					.catch((err) => {
+						console.error(err);
+					});
+			});
+		}
 	}
 
 	return {

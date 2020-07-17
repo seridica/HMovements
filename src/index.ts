@@ -7,36 +7,42 @@ import Diagram from './ts/diagrams';
 import Video from './ts/videoplayer';
 import Settings from './ts/settings';
 import Startscreen from './ts/startscreen';
-import { ipcRenderer } from 'electron';
+import Deidentify from './ts/deidentify';
+import { remote } from 'electron';
 const videoPlayer: HTMLVideoElement = $('#main_player')[0] as HTMLVideoElement;
 const skeletonPlayer: HTMLVideoElement = $('#skeleton_player')[0] as HTMLVideoElement;
 
 // Main initialization function that calls the initialization functions in other modules.
 const init = (configStore: ConfigStore): void => {
-	ipcRenderer.invoke('initialize-menu');
 	const diagram = Diagram(videoPlayer, configStore);
 	const videoControl = Video(videoPlayer, skeletonPlayer, configStore);
 	const settings = Settings(
 		() => {
 			processVideo((err: Error, data: string) => {
 				util.processNewSetting(err, data, () => diagram.refreshCanvas());
-			}, configStore.mutableData);
+			}, configStore.epochThresholdData);
 		},
 		videoPlayer,
-		configStore
+		configStore,
+		videoControl
 	);
+	const deidentify = Deidentify(deidentifyVideo, configStore, videoControl);
 	videoControl.init();
 	diagram.init(false);
 	settings.init();
+	deidentify.init();
+
+	$('#main-menu-btn').click(() => {
+		remote.dialog
+			.showMessageBox(remote.getCurrentWindow(), {
+				message: 'Are you sure you want to return to Main Menu?',
+				title: 'Main Menu',
+				buttons: ['Ok', 'Cancel'],
+			})
+			.then((res) => {
+				if (res.response === 0) document.location.reload();
+			});
+	});
 };
 const startscreen = Startscreen(processVideo, init, videoPlayer);
 startscreen.init();
-
-ipcRenderer.on('deidentify', (event, arg) => {
-	console.log('Deidentification Started');
-	deidentifyVideo((error: any, data: any) => {
-		console.log(error);
-		console.log(data);
-		alert('Done');
-	});
-});

@@ -1,4 +1,4 @@
-import { app, BrowserWindow, Menu, ipcMain, dialog } from 'electron';
+import { app, BrowserWindow } from 'electron';
 import * as path from 'path';
 function createWindow() {
 	// Create the browser window.
@@ -38,25 +38,5 @@ app.on('activate', () => {
 	// dock icon is clicked and there are no other windows open.
 	if (BrowserWindow.getAllWindows().length === 0) {
 		createWindow();
-	}
-});
-
-ipcMain.handle('initialize-menu', (event, arg) => {
-	const win: BrowserWindow | null = BrowserWindow.getFocusedWindow();
-	if (win) {
-		const template: Electron.MenuItemConstructorOptions[] = [
-			{
-				label: 'Tools',
-				submenu: [
-					{
-						label: 'De-identification',
-						click: () => win.webContents.send('deidentify'),
-					},
-				],
-			},
-		];
-		win.setMenuBarVisibility(true);
-		const menu = Menu.buildFromTemplate(template);
-		Menu.setApplicationMenu(menu);
 	}
 });

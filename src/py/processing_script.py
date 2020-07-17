@@ -40,7 +40,7 @@ head_thresh = float(sys.argv[4])
 arm_thresh = float(sys.argv[5])
 leg_thresh = float(sys.argv[6])
 feet_thresh = float(sys.argv[7])
-video_name = get_video_name(video_path)
+video_name = 'skeleton'
 
 # Go to top level open pose directory
 if should_run_openpose == '1':
