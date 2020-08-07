@@ -49,16 +49,24 @@ export default function startscreen(processVideo: Function, initialize: Function
 				});
 		});
 
-		$('#continue_btn').click(() => {
+		$('#continue_btn').click(async () => {
 			const savePath = localStorage.getItem('savePath');
 			if (localStorage.getItem('videoPath') !== null && savePath !== null) {
 				$('#input_screen').css({ display: 'none' });
 				$('#loading').css({ visibility: 'visible' });
 				configStore = new ConfigStore(localStorage.getItem('videoPath')!, savePath, generalThresholds, epochLength);
 				initLoadingScreen(savePath, videoPlayer);
-				processVideo((err: Error, data: string) => {
-					util.processNewFile(err, data, () => initialize(configStore));
-				});
+				const response = await processVideo(0);
+				if (response !== null) {
+					util.processNewFile(response, () => initialize(configStore));
+				} else {
+					const response2 = await processVideo(1);
+					if (response2 !== null) {
+						util.processNewFile(response2, () => initialize(configStore));
+					} else {
+						alert('Something went wrong. Please try again.');
+					}
+				}
 			} else {
 				alert('Make sure you have uploaded a video and select the save location.');
 			}
@@ -91,14 +99,15 @@ export default function startscreen(processVideo: Function, initialize: Function
 		videoPlayer.load();
 		var interval = setInterval(() => {
 			if (videoPlayer.readyState >= 3) {
+				let prevNumFiles = 0;
 				var interval2 = setInterval(() => {
 					const numFiles = util.filesSoFar(savePath + '/json');
 					const per = Math.round((numFiles / (fps * Math.floor(videoPlayer.duration))) * 10000) / 100;
-					$('#load_percentage').text(per + '%');
-					if (per >= 1) {
+					if ((numFiles == prevNumFiles && numFiles !== 0) || per >= 100) {
 						clearInterval(interval2);
 						$('#load_percentage').text('');
 					}
+					$('#load_percentage').text(per + '%');
 				}, 2000);
 				clearInterval(interval);
 			}

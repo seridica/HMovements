@@ -1,4 +1,4 @@
-import { remote } from 'electron';
+import { remote, ipcRenderer } from 'electron';
 import * as $ from 'jquery';
 import * as _ from 'lodash';
 import type ConfigStore from './configstore';
@@ -75,7 +75,6 @@ export default function settings(pythonScript: Function, videoPlayer: HTMLVideoE
 		saveDirectorySettings();
 		configStore.saveData(newSettings);
 		videoControl.loadVideos();
-		console.log(hasEpochandThresholdChanged);
 		return hasEpochandThresholdChanged;
 	}
 
@@ -86,7 +85,7 @@ export default function settings(pythonScript: Function, videoPlayer: HTMLVideoE
 		for (let key in settings) {
 			mutableSettingsList.push(`
 			<div style="flex: 1; align-items: center;">
-				<label style="font-size: 1vw; text-align: center;">${key == 'epochLength' ? 'Epoch Length' : key}: </label>
+				<label style="font-size: 1.5vmin; text-align: center;">${key == 'epochLength' ? 'Epoch Length' : key}: </label>
 				<input
 					id="${key}_setting"
 					style="text-align: center; font-size: 1vw; height: 3vh; width: 7vw; outline: none; border: none; border-bottom: 1px solid black;"
@@ -115,9 +114,10 @@ export default function settings(pythonScript: Function, videoPlayer: HTMLVideoE
 				const didEpochAndThresholdChange = saveSettings();
 				exitSettings();
 				if (didEpochAndThresholdChange) {
-					// $('#loading').css({ visibility: 'visible' });
-					// $('#main_content').css({ visibility: 'hidden' });
-					// pythonScript();
+					ipcRenderer.invoke('close-all-windows');
+					$('#loading').css({ visibility: 'visible' });
+					$('#main_content').css({ visibility: 'hidden' });
+					pythonScript();
 				}
 			} catch (error) {
 				remote.dialog.showErrorBox(error.message, 'Please Try Again');
@@ -155,7 +155,7 @@ export default function settings(pythonScript: Function, videoPlayer: HTMLVideoE
 			let dirID = _.snakeCase(key);
 			$('#directory_settings').append(
 				`<div style="flex: 1; align-items: center;">
-					<label style="font-size: 1vw; text-align: center;">${_.startCase(key)}: </label>
+					<label style="font-size: 1.5vmin; text-align: center;">${_.startCase(key)}: </label>
 					<br />
 					<div style="display: flex;">
 						<span class="directory_paths" id="${dirID}_value">

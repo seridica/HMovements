@@ -5,25 +5,21 @@ import { generalThresholds, epochLength } from './constants';
 import * as path from 'path';
 
 // Calls processHelper with writeToFile to process video uploaded for the first time.
-const processNewFile = (err: any, data: string, initFunction: () => void) => {
-	if (!err) {
-		try {
-			processHelper(data, writeToFile);
-			initFunction();
-		} catch (e) {}
-	}
+const processNewFile = (data: string, initFunction: () => void) => {
+	try {
+		processHelper(data, writeToFile);
+		initFunction();
+	} catch (e) {}
 };
 
 // Calls processHelper with updateFile to process new settings inputted by the user.
-const processNewSetting = (err: any, data: string, refreshCanvas: () => void) => {
-	if (!err) {
-		try {
-			processHelper(data, updateFile);
-			refreshCanvas();
-			$('#loading').css({ visibility: 'hidden' });
-			$('#main_content').css({ visibility: 'visible' });
-		} catch (e) {}
-	}
+const processNewSetting = (data: string, refreshCanvas: () => void) => {
+	try {
+		processHelper(data, updateFile);
+		refreshCanvas();
+		$('#loading').css({ visibility: 'hidden' });
+		$('#main_content').css({ visibility: 'visible' });
+	} catch (e) {}
 };
 
 // Process the new motion data from the Python script and update or create a data.json file.
@@ -34,7 +30,7 @@ const processHelper = (data: string, fn: Function) => {
 	localStorage.setItem('videoData', dataParsed);
 	const savePath = localStorage.getItem('savePath')!;
 	const videoPath = localStorage.getItem('videoPath')!;
-	fn(savePath, videoPath, dataString);
+	fn(savePath, videoPath, dataParsed);
 };
 
 // Gets the video name of the inputted video.
@@ -106,7 +102,6 @@ const filesSoFar = (savePath: string): number => {
 		const files = fs.readdirSync(savePath);
 		return files.length;
 	} catch (e) {
-		console.log('not yet');
 		return 0;
 	}
 };

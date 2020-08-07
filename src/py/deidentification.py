@@ -5,7 +5,7 @@ import os
 from queue import Queue
 import subprocess
 
-haarcascadePath = os.path.join(os.getcwd(), 'src', 'py', 'haarcascade', 'haarcascade_frontalface_alt.xml')
+haarcascadePath = os.path.join(os.getcwd(), 'haarcascade', 'haarcascade_frontalface_alt.xml')
 ffmpeg_path = os.path.join(os.getcwd(), "ffmpeg\\")
 
 faceCascade = cv.CascadeClassifier(haarcascadePath)

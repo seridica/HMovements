@@ -1,7 +1,6 @@
 import * as $ from 'jquery';
 import * as path from 'path';
 import ConfigStore from './configstore';
-import * as util from './util';
 
 export default function deidentify(deidentifyVideo: Function, configStore: ConfigStore, videoControl: any) {
 	function init() {
@@ -13,17 +12,18 @@ export default function deidentify(deidentifyVideo: Function, configStore: Confi
 
 		$('#deidentify_btn').click(() => {
 			exitDialog();
-			deidentifyVideo(configStore, (error: any, data: any) => {
-				if (error) {
-					console.log(error);
-				} else {
+			deidentifyVideo(configStore).then(
+				() => {
 					const savePath: string = configStore.savePath;
 					configStore.videoPath = path.join(savePath, 'blurred.mp4');
 					configStore.skeletonPath = path.join(savePath, 'blurred_skeleton.mp4');
 					configStore.writeSettings();
 					videoControl.loadVideos();
+				},
+				() => {
+					alert('Something went wrong. Please try again.');
 				}
-			});
+			);
 		});
 
 		$('#content_wrapper').click(exitDialog);

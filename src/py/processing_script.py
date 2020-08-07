@@ -20,7 +20,8 @@ Code for running OpenPose
 
 # set dir for Openpose:
 # op_path = 'D:/UBC/Vigilance/OpenPose/openpose-CPU/' # ex: ~\Openpose
-op_path = os.path.join(os.getcwd(), "openpose_cpu\\")
+op_path = os.path.join(os.getcwd(), "openpose\\")
+op_path_cpu = os.path.join(os.getcwd(), "openpose_cpu\\")
 ffmpeg_path = os.path.join(os.getcwd(), "ffmpeg\\")
 
 
@@ -43,8 +44,11 @@ feet_thresh = float(sys.argv[7])
 video_name = 'skeleton'
 
 # Go to top level open pose directory
-if should_run_openpose == '1':
-    os.chdir(op_path)
+if should_run_openpose >= '1':
+    if should_run_openpose == '1':
+        os.chdir(op_path_cpu)
+    else:
+        os.chdir(op_path)
     subprocess.run([r'bin\OpenPoseDemo.exe', '--video', video_path, '--write_json', fr'{save_path}\json', '--write_video', fr'{save_path}\{video_name}.avi', '--display', '0'])
     os.chdir(ffmpeg_path)
     subprocess.run([r'bin\ffmpeg.exe', '-i', fr'{save_path}\{video_name}.avi', fr'{save_path}\{video_name}.mp4'])

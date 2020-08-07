@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, ipcMain, dialog } from 'electron';
 import * as path from 'path';
 function createWindow() {
 	// Create the browser window.
@@ -7,16 +7,17 @@ function createWindow() {
 		height: 600,
 		webPreferences: {
 			nodeIntegration: true,
-			devTools: true,
 		},
 	});
 
 	// and load the index.html of the app.
-	win.setMenuBarVisibility(false);
 	win.loadFile(path.join(__dirname, '../index.html'));
 	win.maximize();
+	win.setMenu(null);
 	// Open the DevTools.
-	win.webContents.openDevTools();
+	win.on('close', () => {
+		app.quit();
+	});
 }
 
 // This method will be called when Electron has finished
@@ -38,5 +39,52 @@ app.on('activate', () => {
 	// dock icon is clicked and there are no other windows open.
 	if (BrowserWindow.getAllWindows().length === 0) {
 		createWindow();
+	}
+});
+
+const diagramWindows: {
+	[Key: string]: BrowserWindow | null;
+} = {};
+
+ipcMain.handle('create-diagram-window', (event, arg) => {
+	let winName = Object.keys(arg[0])[0];
+	if (!diagramWindows[winName]) {
+		const window: BrowserWindow = new BrowserWindow({
+			height: 600,
+			width: 800,
+			title: arg[0].name,
+			webPreferences: {
+				nodeIntegration: true,
+			},
+		});
+		diagramWindows[winName] = window;
+		window.setMenu(null);
+		window.loadFile('diagram.html').then(() => {
+			window.webContents.send('initialize-diagram', arg);
+		});
+		window.on('close', () => {
+			diagramWindows[winName] = null;
+		});
+	} else {
+		dialog.showErrorBox('Warning', 'Window is already opened.');
+	}
+});
+
+ipcMain.handle('timestamp', (event, arg) => {
+	for (let key in diagramWindows) {
+		let win: BrowserWindow | null | undefined = diagramWindows[key];
+		if (win) {
+			win.webContents.send('reply-timestamp', arg);
+		}
+	}
+});
+
+ipcMain.handle('close-all-windows', (event, arg) => {
+	for (let key in diagramWindows) {
+		let win: BrowserWindow | null | undefined = diagramWindows[key];
+		if (win) {
+			win.close();
+			diagramWindows[key] = null;
+		}
 	}
 });

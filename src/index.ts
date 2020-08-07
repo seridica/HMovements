@@ -18,9 +18,9 @@ const init = (configStore: ConfigStore): void => {
 	const videoControl = Video(videoPlayer, skeletonPlayer, configStore);
 	const settings = Settings(
 		() => {
-			processVideo((err: Error, data: string) => {
-				util.processNewSetting(err, data, () => diagram.refreshCanvas());
-			}, configStore.epochThresholdData);
+			processVideo(0, configStore.epochThresholdData).then((res: any) => {
+				if (res) util.processNewSetting(res, diagram.refreshCanvas);
+			});
 		},
 		videoPlayer,
 		configStore,

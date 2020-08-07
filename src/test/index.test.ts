@@ -137,7 +137,7 @@ describe('Settings tests', () => {
 
 	let mockConfigStore: ConfigStore = new ConfigStore('', '', { Head: 5, Arms: 3, Legs: 1, Feet: 2 }, 5);
 	let pythonScript = jest.fn();
-	let settings = Settings(pythonScript, { duration: 5 } as any, mockConfigStore);
+	let settings = Settings(pythonScript, { duration: 5 } as any, mockConfigStore, null);
 
 	it('refreshSettings with basic inputs', () => {
 		document.body.innerHTML =

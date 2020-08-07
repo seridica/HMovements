@@ -6,8 +6,9 @@
 	"scripts": {
 		"build": "tsc",
 		"start": "npm run build && electron .",
+		"package": "asar pack hmovements/resources/app hmovements/resources/app.asar",
 		"dist-mac": "npm run build && electron-packager . mac --platform=darwin",
-		"dist-win": "npm run build && electron-packager . win --platform=win32",
+		"dist-win": "npm run build && electron-packager . HMovements --platform=win32 --app-copyright='HMovements' ",
 		"test": "jest"
 	},
 	"repository": {
@@ -27,6 +28,7 @@
 		"@types/jest": "^26.0.0",
 		"@types/jquery": "^3.3.38",
 		"@types/lodash": "^4.14.155",
+		"asar": "^3.0.3",
 		"electron": "^8.2.5",
 		"electron-packager": "^14.2.1",
 		"jest": "^26.0.1",
