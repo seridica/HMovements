@@ -16,24 +16,27 @@ def open_SCIT_json(json_path):
     video_data = []
     json_files = os.listdir(json_path)
     for fname in json_files:
-        with open(json_path + fname) as json_file:
-            data = json.load(json_file)
-
-        if data['people'] != []:
-            dirty_points = np.array(data['people'][0]['pose_keypoints_2d'])
-
-            n = 25
-            x_idx = 3 * np.arange(n)
-            y_idx = x_idx + 1
-
-            x_list = dirty_points[x_idx]
-            y_list = dirty_points[y_idx]
-
-        else:
-            x_list = np.zeros(25)
-            y_list = np.zeros(25)
-
-        video_data.append(list(zip(x_list, y_list)))
+        
+        # Only consider json files
+        if '.json' in fname:
+            with open(json_path + fname) as json_file:
+                data = json.load(json_file)
+    
+            if data['people'] != []:
+                dirty_points = np.array(data['people'][0]['pose_keypoints_2d'])
+    
+                n = 25
+                x_idx = 3 * np.arange(n)
+                y_idx = x_idx + 1
+    
+                x_list = dirty_points[x_idx]
+                y_list = dirty_points[y_idx]
+    
+            else:
+                x_list = np.zeros(25)
+                y_list = np.zeros(25)
+    
+            video_data.append(list(zip(x_list, y_list)))
 
     return np.array(video_data)
 
@@ -118,14 +121,16 @@ def epoch_threshold(insig, epoch_len, threshold, start_t, end_t):
     start_f = int(start_t * 1800)
     end_f = int(end_t * 1800)
     epochs = []
+    epoch_t = []
 
     # Run through epochs until we reach the end
     i = start_f
     while i+int(epoch_len*30) <= end_f:
         epochs.append(np.max(insig[i:int(i+epoch_len*30)]))
         i = int( i + epoch_len*30 )
+        epoch_t.append(i)
 
-    return np.array( epochs ) > threshold
+    return (epoch_t, np.array( epochs ) > threshold)
 
 """
 Compute normalization factor (neck to torso length)

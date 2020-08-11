@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Mon May  4 16:42:10 2020
+Created on Tue Aug 11 15:33:17 2020
 
 @author: Calvin
 """
@@ -16,60 +16,23 @@ import matplotlib.pyplot as plt
 from save_functions import *
 
 """
-Code for running OpenPose
-"""
-
-# set dir for Openpose:
-# op_path = 'D:/UBC/Vigilance/OpenPose/openpose-CPU/' # ex: ~\Openpose
-op_path = os.path.join(os.getcwd(), "openpose\\")
-op_path_cpu = os.path.join(os.getcwd(), "openpose_cpu\\")
-ffmpeg_path = os.path.join(os.getcwd(), "ffmpeg\\")
-
-
-# set parameter to save keypoint
-
-video_path = sys.argv[1]
-save_path = sys.argv[2]
-should_run_openpose = sys.argv[3]
-
-# Default thresholds - Taken from Bu's code
-# head_thresh = 0.14
-# arm_thresh = 0.19
-# leg_thresh = 0.97
-# feet_thresh = 0.36
-
-head_thresh = float(sys.argv[4])
-arm_thresh = float(sys.argv[5])
-leg_thresh = float(sys.argv[6])
-feet_thresh = float(sys.argv[7])
-video_name = 'skeleton'
-
-# Go to top level open pose directory
-if should_run_openpose >= '1':
-    if should_run_openpose == '1':
-        os.chdir(op_path_cpu)
-    else:
-        os.chdir(op_path)
-    subprocess.run([r'bin\OpenPoseDemo.exe', '--video', video_path, '--write_json', fr'{save_path}\json', '--write_video', fr'{save_path}\{video_name}.avi', '--display', '0'])
-    os.chdir(ffmpeg_path)
-    subprocess.run([r'bin\ffmpeg.exe', '-i', fr'{save_path}\{video_name}.avi', fr'{save_path}\{video_name}.mp4'])
-
-os.chdir(ffmpeg_path)
-video_duration = subprocess.run(['bin\\ffprobe.exe', '-i', video_path, '-show_entries', 'format=duration', '-v', 'quiet', '-of', 'csv=%s' %("p=0")], stdout=subprocess.PIPE, text=True).stdout
-video_duration = float(video_duration.split('\n')[0])
-# set parameter for timestamp of video, in minute
-epoch_length = float(sys.argv[8])
-start_t = 0.0 # ex: enter 10.5 for 10:30
-end_t = math.floor(video_duration/epoch_length) * epoch_length / 60
-"""
 Code for post-processing json outputs
 This is adapted from Bu's jupyter notebook code:
 Newest_version.ipynb
 """
+save_path = 'D:/Google Drive/UBC Postdoc/Vigilance/Movement Code/test/'
+
 # First extract raw data from the json files
-json_data = open_SCIT_json( save_path + '\json\\' )
+json_data = open_SCIT_json( save_path )# + '\json\\' )
 
 # Compute the max displacements (as defined in the paper) for each of the 25 track points
+start_t = 0.0;
+end_t = 1.0;
+epoch_length = 5.0
+head_thresh = 0.14/2
+arm_thresh = 0.19/2
+leg_thresh = 0.97/2
+feet_thresh = 0.36/2
 max_disp_array = []
 for i in range(25):
     max_disp_array.append(extract_max_vector_length(i, json_data, start_t, end_t))
@@ -143,6 +106,9 @@ np.savez(save_path + '\\analysis.npz', max_disp_data=max_disp_data, head_DL_filt
          rfeet_DL_epoch=rfeet_DL_epoch)
 
 # Save data in csv files
+save_path = 'D:/Google Drive/UBC Postdoc/Vigilance/Movement Code/'
+video_path = 'a'
+
 segmov_name = save_path + '\\SegmentMovements.csv'
 SaveCSV( head_DL_filt, larm_DL_filt, rarm_DL_filt, lleg_DL_filt, rleg_DL_filt, lfeet_DL_filt, rfeet_DL_filt, segmov_name )
 
