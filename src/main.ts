@@ -46,8 +46,11 @@ const diagramWindows: {
 	[Key: string]: BrowserWindow | null;
 } = {};
 
-ipcMain.handle('create-diagram-window', (event, arg) => {
+ipcMain.handle('create-diagram-window', createDiagramWindow);
+
+function createDiagramWindow(event: any, arg: any) {
 	let winName = Object.keys(arg[0])[0];
+
 	if (!diagramWindows[winName]) {
 		const window: BrowserWindow = new BrowserWindow({
 			height: 600,
@@ -58,6 +61,7 @@ ipcMain.handle('create-diagram-window', (event, arg) => {
 			},
 		});
 		diagramWindows[winName] = window;
+
 		window.setMenu(null);
 		window.loadFile('diagram.html').then(() => {
 			window.webContents.send('initialize-diagram', arg);
@@ -68,18 +72,22 @@ ipcMain.handle('create-diagram-window', (event, arg) => {
 	} else {
 		dialog.showErrorBox('Warning', 'Window is already opened.');
 	}
-});
+}
 
-ipcMain.handle('timestamp', (event, arg) => {
+ipcMain.handle('send-timestamp', sendUpdatedTimestampToDiagramWindows);
+
+function sendUpdatedTimestampToDiagramWindows(event: any, arg: any) {
 	for (let key in diagramWindows) {
 		let win: BrowserWindow | null | undefined = diagramWindows[key];
 		if (win) {
 			win.webContents.send('reply-timestamp', arg);
 		}
 	}
-});
+}
 
-ipcMain.handle('close-all-windows', (event, arg) => {
+ipcMain.handle('close-all-windows', closeAllDiagramWindows);
+
+function closeAllDiagramWindows(event: any, arg: any) {
 	for (let key in diagramWindows) {
 		let win: BrowserWindow | null | undefined = diagramWindows[key];
 		if (win) {
@@ -87,4 +95,4 @@ ipcMain.handle('close-all-windows', (event, arg) => {
 			diagramWindows[key] = null;
 		}
 	}
-});
+}

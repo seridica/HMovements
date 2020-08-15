@@ -5,32 +5,30 @@ import { generalThresholds, epochLength } from './constants';
 import * as path from 'path';
 
 // Calls processHelper with writeToFile to process video uploaded for the first time.
-const processNewFile = (data: string, initFunction: () => void) => {
+const processNewFile = (data: string, savePath: string, videoPath: string) => {
 	try {
-		processHelper(data, writeToFile);
-		initFunction();
+		const processedData = processRawData(data);
+		writeToFile(processedData, savePath, videoPath);
+		return processedData;
 	} catch (e) {}
 };
 
 // Calls processHelper with updateFile to process new settings inputted by the user.
-const processNewSetting = (data: string, refreshCanvas: () => void) => {
+const processNewSetting = (data: string, savePath: string) => {
 	try {
-		processHelper(data, updateFile);
-		refreshCanvas();
-		$('#loading').css({ visibility: 'hidden' });
-		$('#main_content').css({ visibility: 'visible' });
+		const processedData = processRawData(data);
+		updateFile(processedData, savePath);
+		turnOffLoadingScreen();
+		return processedData;
 	} catch (e) {}
 };
 
 // Process the new motion data from the Python script and update or create a data.json file.
-const processHelper = (data: string, fn: Function) => {
+const processRawData = (data: string) => {
 	let dataString = data.toString();
 	let dataParsed = dataString.slice(dataString.indexOf('{'));
 	if (!dataParsed) throw new Error('Video data cannot be read');
-	localStorage.setItem('videoData', dataParsed);
-	const savePath = localStorage.getItem('savePath')!;
-	const videoPath = localStorage.getItem('videoPath')!;
-	fn(savePath, videoPath, dataParsed);
+	return dataParsed;
 };
 
 // Gets the video name of the inputted video.
@@ -44,12 +42,12 @@ const getVideoName = (videoPath: string): string | null => {
 };
 
 // Updates the existing data.json file to reflect new settings.
-const updateFile = (savePath: string, videoPath: string, data: string) => {
+const updateFile = (data: string, savePath: string) => {
 	fs.writeFileSync(`${savePath}/data.json`, data, 'utf8');
 };
 
 // Creates data.json and config.json for processing a video for the first time.
-const writeToFile = (savePath: string, videoPath: string, data: string) => {
+const writeToFile = (data: string, savePath: string, videoPath: string) => {
 	const json = {
 		videoPath,
 		bodyPartsThreshold: generalThresholds,
@@ -64,15 +62,11 @@ const importExistingFile = (savePath: string) => {
 	try {
 		let configFile: any = fs.readFileSync(`${savePath}/config.json`, 'utf8');
 		configFile = JSON.parse(configFile);
-		const videoPath = configFile.videoPath;
 		const videoData = fs.readFileSync(`${savePath}/data.json`, 'utf8');
-		localStorage.setItem('savePath', savePath);
-		localStorage.setItem('videoPath', videoPath);
-		localStorage.setItem('videoData', videoData);
-		return configFile;
+		return [configFile, videoData];
 	} catch (error) {
 		alert('Make sure the folder is not missing any files.');
-		return null;
+		return [];
 	}
 };
 
@@ -97,7 +91,7 @@ const calculateVideoDurationByEpoch = (epoch: number, duration: number): number 
 };
 
 // Counts the files processed by OpenPose so far to track the progress.
-const filesSoFar = (savePath: string): number => {
+const findNumOfFilesInDirectory = (savePath: string): number => {
 	try {
 		const files = fs.readdirSync(savePath);
 		return files.length;
@@ -106,17 +100,49 @@ const filesSoFar = (savePath: string): number => {
 	}
 };
 
-const cleanUpTempFiles = (directory: string) => {
-	fs.readdir(directory, (err, files) => {
-		if (err) throw err;
-		for (let file of files) {
-			if (path.extname(file) === '.avi') {
-				fs.unlink(path.join(directory, file), (err) => {
-					if (err) console.error(err);
-				});
+const toggleElementVisibility = (jQueryElement: JQuery<HTMLElement>, isVisible: boolean) => {
+	let display: string = 'none';
+	if (isVisible) display = '';
+	jQueryElement.css({ display });
+};
+
+const checkIfVideosAreDoneLoading = (): Promise<void> => {
+	const videoPlayer: HTMLVideoElement = $('#main_player')[0] as HTMLVideoElement;
+	const skeletonPlayer: HTMLVideoElement = $('#skeleton_player')[0] as HTMLVideoElement;
+	return new Promise((resolve, reject) => {
+		var interval = setInterval(() => {
+			if (videoPlayer.readyState >= 3 && skeletonPlayer.readyState >= 3) {
+				clearInterval(interval);
+				resolve();
 			}
-		}
+		}, 500);
 	});
 };
 
-export { processNewSetting, processNewFile, getVideoName, importExistingFile, formatVideoTime, calculateVideoDurationByEpoch, filesSoFar };
+const turnOnLoadingScreen = () => {
+	const mainContent = $('#main_content');
+	const loading = $('#loading');
+	toggleElementVisibility(mainContent, false);
+	toggleElementVisibility(loading, true);
+};
+
+const turnOffLoadingScreen = () => {
+	const mainContent = $('#main_content');
+	const loading = $('#loading');
+	toggleElementVisibility(mainContent, true);
+	toggleElementVisibility(loading, false);
+};
+
+export {
+	processNewSetting,
+	processNewFile,
+	getVideoName,
+	importExistingFile,
+	formatVideoTime,
+	calculateVideoDurationByEpoch,
+	findNumOfFilesInDirectory,
+	toggleElementVisibility,
+	checkIfVideosAreDoneLoading,
+	turnOffLoadingScreen,
+	turnOnLoadingScreen,
+};

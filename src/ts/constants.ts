@@ -61,3 +61,9 @@ export const bodyParts: BodyParts = {
 };
 
 export const fps = 30.0;
+
+export enum OpenPose {
+	NONE = 0,
+	CPU = 1,
+	GPU = 2,
+}

@@ -6,13 +6,15 @@
 		<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';" />
 	</head>
 	<body>
-		<div id="loading" class="d-flex justify-content-center" style="visibility: hidden;">
-			<div class="spinner-border" style="top: 40%; position: absolute; width: 10vw; height: 10vw;" role="status">
-				<span class="sr-only">Loading...</span>
+		<div id="loading" style="display: none;">
+			<div class="d-flex justify-content-center">
+				<div class="spinner-border" style="top: 40%; position: absolute; width: 10vw; height: 10vw;" role="status">
+					<span class="sr-only">Loading...</span>
+				</div>
+				<span id="load_percentage" style="top: 46%; position: absolute; font-size: 2vw;"></span>
 			</div>
-			<span id="load_percentage" style="top: 46%; position: absolute; font-size: 2vw;"></span>
 		</div>
-		<div id="input_screen" style="visibility: visible; z-index: 1; height: 90vh;">
+		<div id="input_screen" style="z-index: 1; height: 90vh;">
 			<div id="new_input">
 				<span style="position: absolute; top: 5vh; font-size: 4vmin;">Upload New Video to Process</span>
 				<div style="flex: 2;"></div>
@@ -54,11 +56,11 @@
 			<div id="divider"></div>
 			<span>OR</span>
 		</div>
-		<div id="main_content" style="visibility: hidden; z-index: -1;">
+		<div id="main_content" style="display: none; z-index: -1;">
 			<header style="position: absolute; width: 100%; height: 15vh;">
 				<div style="display: flex; width: 100%; height: 20%;">
-					<span class="dim menubar" id="main-menu-btn">Start Screen</span>
-					<span class="dim menubar" id="deidentify-dialog-btn">De-identification</span>
+					<span class="dim menubar" id="main_menu_btn">Start Screen</span>
+					<span class="dim menubar" id="deidentify_dialog_btn">De-identification</span>
 				</div>
 			</header>
 			<div id="content_wrapper" style="overflow: hidden;">

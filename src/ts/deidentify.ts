@@ -1,41 +1,62 @@
 import * as $ from 'jquery';
 import * as path from 'path';
-import ConfigStore from './configstore';
+import { ConfigStore } from './configstore';
+import * as util from './util';
+import { deidentifyVideo } from './runPython';
 
-export default function deidentify(deidentifyVideo: Function, configStore: ConfigStore, videoControl: any) {
+export default function deidentify(configStore: ConfigStore, videoControl: any) {
 	function init() {
-		$('#close_deidentification_btn').click(exitDialog);
-		$('#deidentify-dialog-btn').click(() => {
-			$('#deidentification_dialog').css({ display: 'flex', top: '50vh', opacity: '0%' });
-			$('#deidentification_dialog').animate({ top: '37.5vh', opacity: '100%' }, 500);
-		});
+		initCloseDeidentificationButton();
+		initDeidentifyDialogButton();
+		initDeidentifyButton();
+	}
 
-		$('#deidentify_btn').click(() => {
+	function initCloseDeidentificationButton() {
+		let closeDeidentificationButton = $('#close_deidentification_btn');
+		closeDeidentificationButton.click(exitDialog);
+	}
+
+	function initDeidentifyDialogButton() {
+		let deidentifyDialogButton = $('#deidentify_dialog_btn');
+		let deidentificationDialog = $('#deidentification_dialog');
+		deidentifyDialogButton.click(() => {
+			deidentificationDialog.css({ display: 'flex', top: '50vh', opacity: '0%' });
+			deidentificationDialog.animate({ top: '37.5vh', opacity: '100%' }, 500);
+		});
+	}
+
+	function initDeidentifyButton() {
+		let deidentifyButton = $('#deidentify_btn');
+		let contentWrapper = $('#content_wrapper');
+		deidentifyButton.click(() => {
 			exitDialog();
-			deidentifyVideo(configStore).then(
-				() => {
-					const savePath: string = configStore.savePath;
-					configStore.videoPath = path.join(savePath, 'blurred.mp4');
-					configStore.skeletonPath = path.join(savePath, 'blurred_skeleton.mp4');
-					configStore.writeSettings();
-					videoControl.loadVideos();
-				},
-				() => {
-					alert('Something went wrong. Please try again.');
-				}
-			);
+			videoControl.pauseVideoIfPlaying();
+			util.turnOnLoadingScreen();
+			deidentifyVideo().then(handleAfterDeidentification, () => {
+				alert('Something went wrong. Please try again.');
+			});
 		});
 
-		$('#content_wrapper').click(exitDialog);
+		contentWrapper.click(exitDialog);
+	}
+
+	function handleAfterDeidentification() {
+		const savePath: string = configStore.get('savePath');
+		configStore.set('videoPath', path.join(savePath, 'blurred.mp4'));
+		configStore.set('skeletonPath', path.join(savePath, 'blurred_skeleton.mp4'));
+		configStore.writeSettings();
+		videoControl.loadVideos();
+		util.turnOffLoadingScreen();
 	}
 
 	function exitDialog() {
-		$('#deidentification_dialog').animate(
+		let deidentificationDialog = $('#deidentification_dialog');
+		deidentificationDialog.animate(
 			{ top: '50vh', opacity: '0%' },
 			{
 				duration: 500,
 				complete: function () {
-					$(this).css({ display: 'none' });
+					util.toggleElementVisibility(deidentificationDialog, false);
 				},
 			}
 		);

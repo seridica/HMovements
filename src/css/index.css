@@ -83,6 +83,7 @@
 	width: 99vw;
 	margin-left: 0.5vw;
 	margin-top: 5vh;
+	overflow: hidden;
 }
 
 #progress_bar {

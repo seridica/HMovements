@@ -1,17 +1,29 @@
 import { remote } from 'electron';
 import { fps, generalThresholds, epochLength } from './constants';
 import * as util from './util';
-import ConfigStore from './configstore';
+import { ConfigStore } from './configstore';
 import * as $ from 'jquery';
+import { processVideoWithOpenPoseCPU, processVideoWithOpenPoseGPU } from './runPython';
+import * as path from 'path';
 
-export default function startscreen(processVideo: Function, initialize: Function, videoPlayer: HTMLVideoElement) {
+export default function startscreen(initialize: Function, videoPlayer: HTMLVideoElement, configStore: ConfigStore) {
 	// Initializes the startscreen by setting up the event handler functions for the buttons.
 	function init() {
-		let configStore: ConfigStore | null = null;
 		window.onbeforeunload = function () {
 			localStorage.clear();
 		};
-		$('#input_btn').click(() => {
+
+		initInputButton();
+		initDestinationButton();
+		initContinueButton();
+		initImportButton();
+	}
+
+	function initInputButton() {
+		let inputBtn: JQuery<HTMLElement> = $('#input_btn');
+		let uploadText: JQuery<HTMLElement> = $('#upload_text');
+
+		inputBtn.click(() => {
 			remote.dialog
 				.showOpenDialog(remote.getCurrentWindow(), {
 					properties: ['openFile'],
@@ -19,26 +31,32 @@ export default function startscreen(processVideo: Function, initialize: Function
 				})
 				.then((result) => {
 					if (result.canceled === false) {
-						const path = result.filePaths[0];
-						$('#upload_text').text(path);
-						localStorage.setItem('videoPath', path);
+						const videoPath = result.filePaths[0];
+						uploadText.text(videoPath);
+						configStore.set('videoPath', videoPath);
 					}
 				})
 				.catch((err) => {
 					console.error(err);
 				});
 		});
+	}
 
-		$('#dest_btn').click(() => {
+	function initDestinationButton() {
+		let destBtn: JQuery<HTMLElement> = $('#dest_btn');
+		let saveText: JQuery<HTMLElement> = $('#save_text');
+
+		destBtn.click(() => {
 			remote.dialog
 				.showOpenDialog(remote.getCurrentWindow(), { properties: ['openDirectory'] })
 				.then((result) => {
 					if (result.canceled === false) {
-						const path = result.filePaths[0];
-						const count = util.filesSoFar(path);
-						if (count === 0) {
-							$('#save_text').text(path);
-							localStorage.setItem('savePath', path);
+						const savePath = result.filePaths[0];
+						const numOfFilesInDirectory = util.findNumOfFilesInDirectory(savePath);
+						if (numOfFilesInDirectory === 0) {
+							saveText.text(savePath);
+							configStore.set('savePath', savePath);
+							localStorage.setItem('savePath', savePath);
 						} else {
 							alert('Make sure the save folder is empty');
 						}
@@ -48,70 +66,111 @@ export default function startscreen(processVideo: Function, initialize: Function
 					console.error(err);
 				});
 		});
+	}
 
-		$('#continue_btn').click(async () => {
-			const savePath = localStorage.getItem('savePath');
-			if (localStorage.getItem('videoPath') !== null && savePath !== null) {
-				$('#input_screen').css({ display: 'none' });
-				$('#loading').css({ visibility: 'visible' });
-				configStore = new ConfigStore(localStorage.getItem('videoPath')!, savePath, generalThresholds, epochLength);
-				initLoadingScreen(savePath, videoPlayer);
-				const response = await processVideo(0);
-				if (response !== null) {
-					util.processNewFile(response, () => initialize(configStore));
-				} else {
-					const response2 = await processVideo(1);
-					if (response2 !== null) {
-						util.processNewFile(response2, () => initialize(configStore));
-					} else {
-						alert('Something went wrong. Please try again.');
-					}
-				}
+	function initContinueButton() {
+		let continueBtn: JQuery<HTMLElement> = $('#continue_btn');
+		let inputScreen: JQuery<HTMLElement> = $('#input_screen');
+		let loadingScreen: JQuery<HTMLElement> = $('#loading');
+
+		continueBtn.click(async () => {
+			const savePath: string = configStore.get('savePath') as string;
+			const videoPath: string = configStore.get('videoPath') as string;
+			configStore.set('epochLength', epochLength);
+			configStore.set('thresholds', generalThresholds);
+			configStore.set('skeletonPath', path.join(savePath, 'skeleton.mp4'));
+			if (videoPath !== null && savePath !== null) {
+				util.toggleElementVisibility(inputScreen, false);
+				util.toggleElementVisibility(loadingScreen, true);
+				await initLoadingScreen();
+				await processVideoUsingOpenPose();
 			} else {
 				alert('Make sure you have uploaded a video and select the save location.');
 			}
 		});
+	}
 
-		$('#import_btn').click(() => {
+	async function processVideoUsingOpenPose() {
+		const responseWithOpenPoseGPU = await processVideoWithOpenPoseGPU();
+		if (responseWithOpenPoseGPU !== null) {
+			const videoData = util.processNewFile(responseWithOpenPoseGPU, configStore.get('savePath'), configStore.get('videoPath'));
+			configStore.set('videoData', videoData);
+			initialize();
+		} else {
+			const responseWithOpenPoseCPU = await processVideoWithOpenPoseCPU();
+
+			if (responseWithOpenPoseCPU !== null) {
+				const videoData = util.processNewFile(responseWithOpenPoseCPU, configStore.get('savePath'), configStore.get('videoPath'));
+				configStore.set('videoData', videoData);
+				initialize();
+			} else {
+				alert('Something went wrong. Please try again.');
+			}
+		}
+	}
+
+	function initImportButton() {
+		let inputScreen: JQuery<HTMLElement> = $('#input_screen');
+		let importBtn: JQuery<HTMLElement> = $('#import_btn');
+		let loadingScreen: JQuery<HTMLElement> = $('#loading');
+		importBtn.click(() => {
 			remote.dialog.showOpenDialog(remote.getCurrentWindow(), { properties: ['openDirectory'] }).then(async (result) => {
 				if (result.canceled === false) {
-					const path = result.filePaths[0];
-					const configFile = util.importExistingFile(path);
-					if (configFile) {
-						configStore = new ConfigStore(
-							configFile.videoPath,
-							localStorage.getItem('savePath')!,
-							configFile.bodyPartsThreshold,
-							configFile.epochLength,
-							configFile.skeletonPath
-						);
-						$('#input_screen').css({ display: 'none' });
-						initialize(configStore);
+					const savePath = result.filePaths[0];
+					const [configFile, videoData] = util.importExistingFile(savePath);
+					if (configFile !== undefined) {
+						configStore.set('videoPath', configFile.videoPath);
+						configStore.set('savePath', savePath);
+						configStore.set('thresholds', configFile.bodyPartsThreshold);
+						configStore.set('epochLength', configFile.epochLength);
+						configStore.set('skeletonPath', configFile.skeletonPath);
+						configStore.set('videoData', videoData);
+						util.toggleElementVisibility(inputScreen, false);
+						util.toggleElementVisibility(loadingScreen, true);
+						initialize();
 					}
 				}
 			});
 		});
 	}
 
-	// Uses the filesSoFar function from util.ts to display the current progress so far.
-	function initLoadingScreen(savePath: string, videoPlayer: HTMLVideoElement) {
-		videoPlayer.src = localStorage.getItem('videoPath')!;
+	async function initLoadingScreen() {
+		let videoPath: string = configStore.get('videoPath');
+		let savePath: string = configStore.get('savePath');
+		videoPlayer.src = videoPath;
 		videoPlayer.load();
-		var interval = setInterval(() => {
-			if (videoPlayer.readyState >= 3) {
-				let prevNumFiles = 0;
-				var interval2 = setInterval(() => {
-					const numFiles = util.filesSoFar(savePath + '/json');
-					const per = Math.round((numFiles / (fps * Math.floor(videoPlayer.duration))) * 10000) / 100;
-					if ((numFiles == prevNumFiles && numFiles !== 0) || per >= 100) {
-						clearInterval(interval2);
-						$('#load_percentage').text('');
-					}
-					$('#load_percentage').text(per + '%');
-				}, 2000);
-				clearInterval(interval);
+		try {
+			await calculateLoadingPercentage(savePath);
+		} catch (e) {
+			alert('Something went wrong. Please try again.');
+		}
+	}
+
+	async function calculateLoadingPercentage(savePath: string) {
+		let loadPercentage: JQuery<HTMLElement> = $('#load_percentage');
+		await util.checkIfVideosAreDoneLoading();
+		let prevNumFiles = 0;
+		var intervalBetweenFileUpdates = setInterval(() => {
+			const numFilesSoFar = util.findNumOfFilesInDirectory(path.join(savePath, 'json'));
+			const currentPercentage = calculatePercentageToTwoDecimalPlaces(numFilesSoFar, videoPlayer.duration);
+			if (isProcessingDone(numFilesSoFar, prevNumFiles, currentPercentage)) {
+				clearInterval(intervalBetweenFileUpdates);
+				loadPercentage.text('');
+			} else {
+				loadPercentage.text(currentPercentage + '%');
 			}
-		}, 500);
+		}, 2000);
+	}
+
+	function calculatePercentageToTwoDecimalPlaces(numFilesSoFar: number, videoDuration: number) {
+		let totalEstimatedFiles = fps * Math.floor(videoDuration);
+		let percentageSoFar = numFilesSoFar / totalEstimatedFiles;
+		let percentageSoFarToTwoDecimalPlaces = Math.round(percentageSoFar * 10000) / 100;
+		return percentageSoFarToTwoDecimalPlaces;
+	}
+
+	function isProcessingDone(numFilesSoFar: number, prevNumFiles: number, currentPercentage: number) {
+		return (numFilesSoFar == prevNumFiles && numFilesSoFar !== 0) || currentPercentage >= 100;
 	}
 
 	return {

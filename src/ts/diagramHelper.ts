@@ -93,9 +93,15 @@ var diagramHelper = (function () {
 		return options;
 	}
 
+	setupChart();
 	// Sets up the chart configurations.
 	function setupChart() {
 		Chart.defaults.WithLine = Chart.defaults.line;
+		drawVerticalVideoBarForChart();
+		drawEpochBackgroundForChart();
+	}
+
+	function drawVerticalVideoBarForChart() {
 		Chart.controllers.WithLine = Chart.controllers.line.extend({
 			draw: function (ease: any) {
 				Chart.controllers.line.prototype.draw.call(this, ease);
@@ -115,6 +121,9 @@ var diagramHelper = (function () {
 				ctx.stroke();
 			},
 		});
+	}
+
+	function drawEpochBackgroundForChart() {
 		Chart.pluginService.register({
 			beforeDraw: function (chart, easing) {
 				const options: any = chart.config.options;
@@ -146,30 +155,37 @@ var diagramHelper = (function () {
 		const epochData = videoData.epoch;
 		const partData = motionData[key] as number[];
 		const partEpochData = epochData[key] as boolean[];
-		var thresholdValue = 0;
-		if (part.includes('Head')) {
-			thresholdValue = epochThresholdData['Head'];
-		} else if (part.includes('Arm')) {
-			thresholdValue = epochThresholdData['Arms'];
-		} else if (part.includes('Leg')) {
-			thresholdValue = epochThresholdData['Legs'];
-		} else {
-			thresholdValue = epochThresholdData['Feet'];
-		}
+		const thresholdValue = findThresholdValueForChart(part, epochThresholdData);
 		const chartBackgroundColor: string[] = partEpochData.map((epoch: boolean) => {
 			return epoch ? 'rgba(139, 240, 193, 0.2)' : 'rgba(255, 99, 132, 0.1)';
 		});
-		let dataPoints: { x: number; y: number }[] = [];
-		for (let i = 0; i < partData.length; i++) {
-			dataPoints.push({ x: i / fps, y: partData[i] });
-		}
-		let partId = part.replace(' ', '') + '_diagram';
+		const dataPoints: { x: number; y: number }[] = formatDataPoints(partData);
+		let partId = key + '_diagram';
 		const canvas = document.getElementById(partId) as HTMLCanvasElement;
 		const motionCtx = canvas.getContext('2d')!;
 		return new Chart(motionCtx, getChartOptions(part, dataPoints, thresholdValue, chartBackgroundColor, epochThresholdData['epochLength']));
 	}
 
-	setupChart();
+	function findThresholdValueForChart(part: string, epochThresholdData: any): number {
+		if (part.includes('Head')) {
+			return epochThresholdData['Head'];
+		} else if (part.includes('Arm')) {
+			return epochThresholdData['Arms'];
+		} else if (part.includes('Leg')) {
+			return epochThresholdData['Legs'];
+		} else {
+			return epochThresholdData['Feet'];
+		}
+	}
+
+	function formatDataPoints(partData: number[]) {
+		let dataPoints: { x: number; y: number }[] = [];
+		for (let i = 0; i < partData.length; i++) {
+			dataPoints.push({ x: i / fps, y: partData[i] });
+		}
+		return dataPoints;
+	}
+
 	return {
 		createChart,
 		setVideoPercentage,
