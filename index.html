@@ -85,7 +85,6 @@
 					<div id="progress_bar"></div>
 				</div>
 			</div>
-			<!-- <img id="settings_btn" class="dim" style="z-index: 2;" src="images/settings.svg" /> -->
 			<input type="image" title="Settings" id="settings_btn" class="dim" style="z-index: 2; outline: none;" src="images/settings.svg" />
 			<div id="settings_content" class="shadow-3">
 				<span style="text-align: center; font-size: 2vmin; margin-top: 5px;">Settings</span>
@@ -115,18 +114,19 @@
 				<div style="border-top: 1px dotted black; width: 85%; height: 15px;"></div>
 				<span style="text-align: center; font-size: 1.5vmin; margin-bottom: 10px;">
 					It will blur the face of the person in the video and load the blurred video. <br />
-					The process will run in the background, however, it will take up most of the computing power.
 				</span>
 				<span style="text-align: center; font-size: 1.5vmin; color: red; margin-bottom: 1vh;">
-					WARNING: THE ALGORITHM IS NOT PERFECT. <br />THERE WILL BE RARE INSTANCES WHERE THE FACE IS NOT BLURRED. <br />
+					WARNING: THE ALGORITHM IS NOT PERFECT. <br />THERE MIGHT BE INSTANCES WHERE THE FACE IS NOT BLURRED. <br />
 					MAKE SURE TO INSPECT THE VIDEO BEFORE DISTRIBUTING TO OTHERS.
 				</span>
-				<span style="text-align: center; font-size: 1.5vmin; margin-bottom: 10px;">
-					Do you wish to proceed?
-				</span>
-				<span id="deidentify_btn" style="font-size: 1.5vmin;" class="grow br-pill ba ph3 black">
-					Proceed
-				</span>
+				<div style="position: relative; flex: 1; display: flex; flex-direction: column; justify-content: flex-end; margin-bottom: 2vh;">
+					<span style="text-align: center; font-size: 1.5vmin;">
+						Do you wish to proceed?
+					</span>
+					<span id="deidentify_btn" style="font-size: 1.5vmin; bottom: 0px;" class="grow br-pill ba ph3 black">
+						Proceed
+					</span>
+				</div>
 				<img id="close_deidentification_btn" src="images/close.svg" />
 			</div>
 		</div>

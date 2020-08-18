@@ -13,7 +13,7 @@ function createWindow() {
 	// and load the index.html of the app.
 	win.loadFile(path.join(__dirname, '../index.html'));
 	win.maximize();
-	win.setMenu(null);
+	// win.setMenu(null);
 	// Open the DevTools.
 	win.on('close', () => {
 		app.quit();

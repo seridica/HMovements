@@ -1,12 +1,12 @@
 import { remote, ipcRenderer } from 'electron';
 import * as $ from 'jquery';
 import * as _ from 'lodash';
-import { ConfigStore } from './configstore';
+import { IConfigStore } from './configstore';
 import { IGeneralThresholds } from './constants';
 import * as util from './util';
 import { processVideoWithoutOpenPose } from './runPython';
 
-export default function settings(videoPlayer: HTMLVideoElement, configStore: ConfigStore, videoControl: any, diagram: any) {
+export default function settings(videoPlayer: HTMLVideoElement, configStore: IConfigStore, videoControl: any, diagram: any) {
 	// Refreshes settings when the user decides not to save.
 	function refreshSettings() {
 		let epochThresholdData = configStore.getEpochThresholdData();
@@ -29,10 +29,10 @@ export default function settings(videoPlayer: HTMLVideoElement, configStore: Con
 				duration: 500,
 				complete: () => {
 					util.toggleElementVisibility(settingsContent, false);
+					refreshSettings();
 				},
 			}
 		);
-		refreshSettings();
 	}
 
 	// Checks whether the new settings are valid then writing to the configStore.
@@ -78,7 +78,6 @@ export default function settings(videoPlayer: HTMLVideoElement, configStore: Con
 		saveEpochAndThresholdSettings();
 		saveDirectorySettings();
 		configStore.saveData(newSettings);
-		videoControl.loadVideos();
 		return hasEpochandThresholdChanged;
 	}
 
@@ -144,6 +143,7 @@ export default function settings(videoPlayer: HTMLVideoElement, configStore: Con
 			try {
 				videoControl.pauseVideoIfPlaying();
 				const didEpochAndThresholdChange = saveSettings();
+				videoControl.loadVideos();
 				exitSettings();
 				if (didEpochAndThresholdChange) {
 					ipcRenderer.invoke('close-all-windows');
@@ -170,8 +170,10 @@ export default function settings(videoPlayer: HTMLVideoElement, configStore: Con
 		};
 		const res = await processVideoWithoutOpenPose(openPoseOptions);
 		if (res) {
-			const videoData = util.processNewSetting(res, configStore.get('savePath'));
+			const videoData = util.processRawData(res);
 			configStore.set('videoData', videoData);
+			util.updateFile(configStore);
+			util.turnOffLoadingScreen();
 		}
 	}
 

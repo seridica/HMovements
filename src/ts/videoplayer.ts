@@ -1,9 +1,9 @@
 import { formatVideoTime, checkIfVideosAreDoneLoading, toggleElementVisibility, turnOffLoadingScreen } from './util';
-import { ConfigStore } from './configstore';
+import { IConfigStore } from './configstore';
 import * as $ from 'jquery';
 import * as path from 'path';
 
-export default function video(videoPlayer: HTMLVideoElement, skeletonPlayer: HTMLVideoElement, configStore: ConfigStore, diagram: any) {
+export default function video(videoPlayer: HTMLVideoElement, skeletonPlayer: HTMLVideoElement, configStore: IConfigStore, diagram: any) {
 	// Initializes the video players and makes sure the video are loaded properly before showing the main screen.
 	function initVideoPlayers(): void {
 		loadVideos();

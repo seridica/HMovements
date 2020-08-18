@@ -1,10 +1,10 @@
 import * as $ from 'jquery';
 import * as path from 'path';
-import { ConfigStore } from './configstore';
+import { IConfigStore } from './configstore';
 import * as util from './util';
 import { deidentifyVideo } from './runPython';
 
-export default function deidentify(configStore: ConfigStore, videoControl: any) {
+export default function deidentify(configStore: IConfigStore, videoControl: any) {
 	function init() {
 		initCloseDeidentificationButton();
 		initDeidentifyDialogButton();

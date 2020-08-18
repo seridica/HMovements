@@ -1,86 +1,22 @@
 import * as util from '../ts/util';
 import * as $ from 'jquery';
-import ConfigStore from '../ts/configStore';
+import { IConfigStore, getConfigStore } from '../ts/configStore';
 import Settings from '../ts/settings';
 
 // Testing functions from util.ts
 describe('Util Tests', () => {
-	// This is necessary since a few tests set items in localStorage
-	beforeEach(() => {
-		localStorage.clear();
+	it('processRawData with invalid data', () => {
+		expect(() => util.processRawData('')).toThrow('Video data cannot be read.');
+		expect(() => util.processRawData('fsfsdfsd')).toThrow('Video data cannot be read.');
 	});
 
-	it('processNewFile without path in localStorage', () => {
-		const initFn = jest.fn();
-		util.processNewFile(undefined, '', initFn);
-		expect(initFn).not.toBeCalled();
-	});
+	it('processRawData with valid data', () => {
+		let sampleData = 'openpose information... {"motion": {"head": [3, 1]}}';
+		let expectedData = '{"motion": {"head": [3, 1]}}';
+		const data = util.processRawData(sampleData);
 
-	it('processNewFile with path in localStorage', () => {
-		let data = {
-			test: 'test',
-		};
-		localStorage.setItem('savePath', __dirname + '/testfiles/');
-		const initFn = jest.fn();
-		util.processNewFile(undefined, JSON.stringify(data), initFn);
-		expect(initFn).toBeCalled();
-	});
-
-	it('processNewFile with error', () => {
-		localStorage.setItem('savePath', __dirname + '/testfiles/');
-		const initFn = jest.fn();
-		util.processNewFile(new Error('test'), '', initFn);
-		expect(initFn).not.toBeCalled();
-	});
-
-	it('processNewSetting without path in localStorage', () => {
-		let data = {
-			test: 'test',
-		};
-		const refreshCanvas = jest.fn();
-		document.body.innerHTML =
-			'<div>' +
-			'<div id="loading" style="visibility: visible;"></div>' +
-			'<div id="main_content" style="visibility: hidden;"></div>' +
-			'</div>';
-		util.processNewSetting(undefined, JSON.stringify(data), refreshCanvas);
-		expect(refreshCanvas).not.toBeCalled();
-		expect($('#loading').css('visibility')).toEqual('visible');
-		expect($('#main_content').css('visibility')).toEqual('hidden');
-	});
-
-	it('processNewSetting with path in localStorage', () => {
-		let data = {
-			test: 'test',
-		};
-		const refreshCanvas = jest.fn();
-		localStorage.setItem('savePath', __dirname + '/testfiles/');
-		document.body.innerHTML =
-			'<div>' +
-			'<div id="loading" style="visibility: visible;"></div>' +
-			'<div id="main_content" style="visibility: hidden;"></div>' +
-			'</div>';
-		util.processNewSetting(undefined, JSON.stringify(data), refreshCanvas);
-		expect(refreshCanvas).toBeCalled();
-		expect($('#loading').css('visibility')).toEqual('hidden');
-		expect($('#main_content').css('visibility')).toEqual('visible');
-	});
-
-	it('processNewSetting with Error', () => {
-		let data = {
-			test: 'test',
-		};
-		const refreshCanvas = jest.fn();
-		localStorage.setItem('savePath', __dirname + '/testfiles/');
-		document.body.innerHTML =
-			'<div>' +
-			'<div id="loading" style="visibility: visible;"></div>' +
-			'<div id="main_content" style="visibility: hidden;"></div>' +
-			'</div>';
-		util.processNewSetting(new Error('test'), JSON.stringify(data), refreshCanvas);
-		expect(refreshCanvas).not.toBeCalled();
-		expect($('#loading').css('visibility')).toEqual('visible');
-		expect($('#main_content').css('visibility')).toEqual('hidden');
+		expect(() => util.processRawData(sampleData)).not.toThrow('Video data cannot be read.');
+		expect(data).toEqual(expectedData);
 	});
 
 	it('getVideoName with invalid path', () => {
@@ -98,12 +34,23 @@ describe('Util Tests', () => {
 	});
 
 	it('importExistingFile with valid path but missing essential files', () => {
+		let mockFn = jest.fn();
+		window.alert = mockFn;
 		let path = __dirname + '/testfiles2';
-		expect(util.importExistingFile(path)).toBeNull();
+		expect(util.importExistingFile(path)).toEqual([]);
+		expect(mockFn).toBeCalled();
 	});
 
 	it('importExistingFile with invalid path', () => {
-		expect(util.importExistingFile('')).toBeNull();
+		let mockFn = jest.fn();
+		window.alert = mockFn;
+		expect(util.importExistingFile('')).toEqual([]);
+		expect(mockFn).toBeCalled();
+	});
+
+	it('importExistingFile with invalid path', () => {
+		let mockFn = jest.fn();
+		window.alert = mockFn;
 	});
 
 	it('formatVideoTime', () => {
@@ -121,25 +68,26 @@ describe('Util Tests', () => {
 		expect(util.calculateVideoDurationByEpoch(0, 57)).toEqual(0);
 	});
 
-	it('filesSoFar', () => {
+	it('findNumOfFilesInDirectory', () => {
 		let path = __dirname + '/testfiles';
-		expect(util.filesSoFar(path)).toEqual(3);
-		expect(util.filesSoFar('')).toEqual(0);
+		expect(util.findNumOfFilesInDirectory(path)).toEqual(3);
+		expect(util.findNumOfFilesInDirectory('')).toEqual(0);
 	});
 });
 
 // Testing functions from settings.ts
 describe('Settings tests', () => {
 	// This is necessary since the tests changes the innerHTML of the body
+	let mockConfigStore: IConfigStore = getConfigStore();
+	let settings = Settings({ duration: 5 } as any, mockConfigStore, null, null);
 	beforeEach(() => {
 		document.body.innerHTML = '';
+		mockConfigStore.clear();
 	});
 
-	let mockConfigStore: ConfigStore = new ConfigStore('', '', { Head: 5, Arms: 3, Legs: 1, Feet: 2 }, 5);
-	let pythonScript = jest.fn();
-	let settings = Settings(pythonScript, { duration: 5 } as any, mockConfigStore, null);
-
 	it('refreshSettings with basic inputs', () => {
+		mockConfigStore.set('thresholds', { Head: 5, Arms: 3, Legs: 1, Feet: 2 });
+		mockConfigStore.set('epochLength', 5);
 		document.body.innerHTML =
 			'<div>' +
 			'	<input id="epochLength_setting" value=4/>' +
@@ -157,9 +105,11 @@ describe('Settings tests', () => {
 	});
 
 	it('saveSettings with valid inputs', () => {
+		mockConfigStore.set('thresholds', { Head: 5, Arms: 3, Legs: 1, Feet: 2 });
+		mockConfigStore.set('epochLength', 5);
 		document.body.innerHTML =
 			'<div>' +
-			'	<input id="epochLength_setting" value="6"/>' +
+			'	<input id="epochLength_setting" value="4"/>' +
 			'	<input id="Head_setting" value="4"/>' +
 			'	<input id="Arms_setting" value="2"/>' +
 			'	<input id="Legs_setting" value="1"/>' +

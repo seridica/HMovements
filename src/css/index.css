@@ -189,9 +189,10 @@
 	flex: 1;
 	flex-direction: column;
 	position: absolute;
+	justify-content: center;
 	left: 35vw;
-	top: 35vh;
-	height: 30vh;
+	top: 37.5vh;
+	height: 25vh;
 	width: 30vw;
 	background-color: white;
 	align-items: center;

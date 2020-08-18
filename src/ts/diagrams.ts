@@ -1,11 +1,11 @@
 import { ipcRenderer } from 'electron';
 import { bodyParts, IVideoData } from './constants';
 import * as util from './util';
-import { ConfigStore } from './configstore';
+import { IConfigStore } from './configstore';
 import * as $ from 'jquery';
 import * as _ from 'lodash';
 import diagramHelper from './diagramHelper';
-var diagram = function (videoPlayer: HTMLVideoElement, configStore: ConfigStore) {
+var diagram = function (videoPlayer: HTMLVideoElement, configStore: IConfigStore) {
 	// Initializes the diagram container by inserting blank canvas into it.
 	function initCanvas() {
 		let diagramContainer = $('#diagram_container');

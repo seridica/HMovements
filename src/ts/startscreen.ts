@@ -1,12 +1,12 @@
 import { remote } from 'electron';
 import { fps, generalThresholds, epochLength } from './constants';
 import * as util from './util';
-import { ConfigStore } from './configstore';
+import { IConfigStore } from './configstore';
 import * as $ from 'jquery';
 import { processVideoWithOpenPoseCPU, processVideoWithOpenPoseGPU } from './runPython';
 import * as path from 'path';
 
-export default function startscreen(initialize: Function, videoPlayer: HTMLVideoElement, configStore: ConfigStore) {
+export default function startscreen(initialize: Function, videoPlayer: HTMLVideoElement, configStore: IConfigStore) {
 	// Initializes the startscreen by setting up the event handler functions for the buttons.
 	function init() {
 		window.onbeforeunload = function () {
@@ -93,19 +93,26 @@ export default function startscreen(initialize: Function, videoPlayer: HTMLVideo
 	async function processVideoUsingOpenPose() {
 		const responseWithOpenPoseGPU = await processVideoWithOpenPoseGPU();
 		if (responseWithOpenPoseGPU !== null) {
-			const videoData = util.processNewFile(responseWithOpenPoseGPU, configStore.get('savePath'), configStore.get('videoPath'));
-			configStore.set('videoData', videoData);
-			initialize();
+			processRawDataFromOpenPose(responseWithOpenPoseGPU);
 		} else {
 			const responseWithOpenPoseCPU = await processVideoWithOpenPoseCPU();
 
 			if (responseWithOpenPoseCPU !== null) {
-				const videoData = util.processNewFile(responseWithOpenPoseCPU, configStore.get('savePath'), configStore.get('videoPath'));
-				configStore.set('videoData', videoData);
-				initialize();
+				processRawDataFromOpenPose(responseWithOpenPoseCPU);
 			} else {
 				alert('Something went wrong. Please try again.');
 			}
+		}
+	}
+
+	function processRawDataFromOpenPose(rawData: any) {
+		try {
+			const videoData = util.processRawData(rawData);
+			configStore.set('videoData', videoData);
+			util.writeToFile(configStore);
+			initialize();
+		} catch (e) {
+			alert('Something went wrong. Please try again.');
 		}
 	}
 
