@@ -3,131 +3,213 @@
 	<head>
 		<meta charset="UTF-8" />
 		<title>HMovements</title>
-		<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';" />
+		<meta
+			http-equiv="Content-Security-Policy"
+			content="script-src 'self' 'unsafe-inline';"
+		/>
 	</head>
 	<body>
 		<div id="loading" style="display: none;">
 			<div class="d-flex justify-content-center">
-				<div class="spinner-border" style="top: 40%; position: absolute; width: 10vw; height: 10vw;" role="status">
+				<div
+					class="spinner-border"
+					style="top: 40%; position: absolute; width: 10vw; height: 10vw;"
+					role="status"
+				>
 					<span class="sr-only">Loading...</span>
 				</div>
-				<span id="load_percentage" style="top: 46%; position: absolute; font-size: 2vw;"></span>
+				<span
+					id="load-percentage"
+					style="top: 46%; position: absolute; font-size: 2vw;"
+				></span>
 			</div>
 		</div>
-		<div id="input_screen" style="z-index: 1; height: 90vh;">
-			<div id="new_input">
-				<span style="position: absolute; top: 5vh; font-size: 4vmin;">Upload New Video to Process</span>
+		<div id="input-screen" style="z-index: 1; height: 90vh;">
+			<div id="new-input">
+				<span style="position: absolute; top: 5vh; font-size: 4vmin;"
+					>Upload New Video to Process</span
+				>
 				<div style="flex: 2;"></div>
-				<div id="input_container" style="margin-bottom: 5vh;">
-					<div style="display: flex; flex-direction: column; align-items: center;">
-						<span style="font-size: 4vh; margin-bottom: 2vh;">Step 1</span>
-						<img id="input_btn" class="dim" src="images/upload.svg" />
-						<span id="upload_text" style="font-size: 1.5vmin;">Upload Video</span>
-						<span id="upload_description" style="font-size: 1.5vmin;"
-							><strong>(Video must be at least five seconds long and in MP4 format)</strong></span
+				<div id="input-container" style="margin-bottom: 5vh;">
+					<div
+						style="
+							display: flex;
+							flex-direction: column;
+							align-items: center;
+						"
+					>
+						<span class="steps">Step 1</span>
+						<img id="input-btn" class="dim" src="images/upload.svg" />
+						<span id="upload-text" style="font-size: 1.5vmin;"
+							>Upload Video</span
+						>
+						<span id="upload-description" style="font-size: 1.5vmin;"
+							><strong
+								>(Video must be at least five seconds long and in MP4
+								format)</strong
+							></span
 						>
 					</div>
 				</div>
-				<div id="dest_container" style="margin-bottom: 5vh;">
-					<div style="display: flex; flex-direction: column; align-items: center;">
-						<span style="font-size: 4vh; margin-bottom: 2vh;">Step 2</span>
-						<img id="dest_btn" class="dim" src="images/file.svg" />
-						<span id="save_text" style="font-size: 1.5vmin;">Select Location to Save Data</span>
-						<span id="save_description" style="font-size: 1.5vmin;"><strong>(Ensure the folder is empty)</strong></span>
+				<div id="dest-container" style="margin-bottom: 5vh;">
+					<div class="sub-button-container">
+						<span class="steps">Step 2</span>
+						<img id="dest-btn" class="dim" src="images/file.svg" />
+						<span id="save-text" style="font-size: 1.5vmin;"
+							>Select Location to Save Data</span
+						>
+						<span id="save-description" style="font-size: 1.5vmin;"
+							><strong>(Ensure the folder is empty)</strong></span
+						>
 					</div>
 				</div>
-				<div id="continue_container">
-					<div style="display: flex; flex-direction: column; align-items: center;">
-						<span style="font-size: 4vh; margin-bottom: 2vh;">Step 3</span>
-						<img id="continue_btn" class="dim" src="images/continue.svg" />
+				<div id="continue-container">
+					<div class="sub-button-container">
+						<span class="steps">Step 3</span>
+						<img id="continue-btn" class="dim" src="images/continue.svg" />
 						<span style="font-size: 1.5vmin;">Continue</span>
 					</div>
 				</div>
 			</div>
-			<div id="existing_input">
-				<span style="position: absolute; top: 5vh; font-size: 4vmin;">Upload Existing File</span>
-				<div id="import_container" style="margin-bottom: 5vh;">
-					<div style="display: flex; flex-direction: column; align-items: center;">
-						<img id="import_btn" class="dim" src="images/upload.svg" />
-						<span id="import_text" style="font-size: 1.5vmin;">Import File</span>
+			<div id="existing-input">
+				<span style="position: absolute; top: 5vh; font-size: 4vmin;"
+					>Upload Existing File</span
+				>
+				<div id="import-container" style="margin-bottom: 5vh;">
+					<div class="sub-button-container">
+						<img id="import-btn" class="dim" src="images/upload.svg" />
+						<span id="import-text" style="font-size: 1.5vmin;"
+							>Import File</span
+						>
 					</div>
 				</div>
 			</div>
 			<div id="divider"></div>
 			<span>OR</span>
 		</div>
-		<div id="main_content" style="display: none; z-index: -1;">
-			<header style="position: absolute; width: 100%; height: 15vh;">
+		<div id="main-content" style="display: none; z-index: -1;">
+			<header>
 				<div style="display: flex; width: 100%; height: 20%;">
-					<span class="dim menubar" id="main_menu_btn">Start Screen</span>
-					<span class="dim menubar" id="deidentify_dialog_btn">De-identification</span>
+					<span class="dim menubar" id="main-menu-btn">Start Screen</span>
+					<span class="dim menubar" id="deidentify-dialog-btn"
+						>De-identification</span
+					>
 				</div>
 			</header>
-			<div id="content_wrapper" style="overflow: hidden;">
-				<div id="main_container" style="display: flex; overflow: hidden; height: 90vh;">
+			<div id="content-wrapper" style="overflow: hidden;">
+				<div id="main-container">
 					<div style="flex: 1; margin-top: 5vh;">
-						<div class="player_container">
-							<video class="player" id="main_player"></video>
+						<div class="player-container">
+							<video muted class="player" id="main-player"></video>
 						</div>
-						<div class="player_container">
-							<video muted class="player" id="skeleton_player"></video>
+						<div class="player-container">
+							<video muted class="player" id="skeleton-player"></video>
 						</div>
 					</div>
-					<div id="diagram_container"></div>
+					<div id="diagram-container"></div>
 				</div>
-				<div id="parts_btn_folder"></div>
+				<div id="parts-btn-folder"></div>
 				<div class="controls">
-					<img id="play_btn" src="images/continue.svg" />
-					<img id="pause_btn" src="images/pause.svg" style="display: none;" />
-					<span id="video_time" style="font-size: 0.8vw;"></span>
+					<img id="play-btn" src="images/continue.svg" />
+					<img id="pause-btn" src="images/pause.svg" style="display: none;" />
+					<span id="video-time" style="font-size: 0.8vw;"></span>
 				</div>
-				<div id="progress_bar_container">
-					<div id="progress_bar"></div>
+				<div id="progress-bar-container">
+					<div id="progress-bar"></div>
 				</div>
 			</div>
-			<input type="image" title="Settings" id="settings_btn" class="dim" style="z-index: 2; outline: none;" src="images/settings.svg" />
-			<div id="settings_content" class="shadow-3">
-				<span style="text-align: center; font-size: 2vmin; margin-top: 5px;">Settings</span>
-				<div style="border-top: 1px dotted black; width: 85%; height: 15px;"></div>
-				<div id="settings_container">
-					<div style="display: flex; width: 100%; height: 10%; margin-bottom: 5px;">
+			<input
+				type="image"
+				title="Settings"
+				id="settings-btn"
+				class="dim"
+				style="z-index: 2; outline: none;"
+				src="images/settings.svg"
+			/>
+			<div id="settings-content" class="shadow-3">
+				<span id="settings-content-title">Settings</span>
+				<div class="dialog-line"></div>
+				<div id="settings-container">
+					<div id="settings-container-menu-btn">
 						<span
-							id="epoch_threshold_toggle"
-							style="color: #ebebeb; border-color: #ebebeb;"
-							class="settings_menubar dim"
+							id="epoch-threshold-toggle"
+							class="settings-menubar dim"
 							data-toggle="true"
 							>Epoch and Threshold</span
 						>
-						<span id="directory_toggle" class="settings_menubar dim" data-toggle="false">Directory</span>
+						<span
+							id="directory-toggle"
+							class="settings-menubar dim"
+							data-toggle="false"
+							>Directory</span
+						>
 					</div>
-					<div id="epoch_threshold_settings" class="sub_settings_container"></div>
-					<div id="directory_settings" class="sub_settings_container" style="display: none;"></div>
+					<div
+						id="epoch-threshold-settings"
+						class="sub-settings-container"
+					></div>
+					<div
+						id="directory-settings"
+						class="sub-settings-container"
+						style="display: none;"
+					></div>
 				</div>
-				<span id="save_btn" style="font-size: 0.8vw;" class="grow br-pill ba ph3 black">
+				<span
+					id="save-btn"
+					style="font-size: 0.8vw;"
+					class="grow br-pill ba ph3 black"
+				>
 					Save Settings
 				</span>
-				<span style="font-size: 0.8vw;">Note: Changing Epoch and Threshold settings will take some time to reload.</span>
-				<img id="close_btn" src="images/close.svg" />
+				<span style="font-size: 0.8vw;"
+					>Note: Changing Epoch and Threshold settings will take some time to
+					reload.</span
+				>
+				<img id="close-btn" src="images/close.svg" />
 			</div>
-			<div id="deidentification_dialog" class="shadow-3">
-				<span style="text-align: center; font-size: 2vmin; margin-top: 10px;">De-identify Video?</span>
-				<div style="border-top: 1px dotted black; width: 85%; height: 15px;"></div>
-				<span style="text-align: center; font-size: 1.5vmin; margin-bottom: 10px;">
-					It will blur the face of the person in the video and load the blurred video. <br />
+			<div id="deidentification-dialog" class="shadow-3">
+				<span id="deidentification-dialog-title">De-identify Video?</span>
+				<div class="dialog-line"></div>
+				<span
+					style="text-align: center; font-size: 1.5vmin; margin-bottom: 10px;"
+				>
+					It will blur the face of the person in the video and load the blurred
+					video. <br />
 				</span>
-				<span style="text-align: center; font-size: 1.5vmin; color: red; margin-bottom: 1vh;">
-					WARNING: THE ALGORITHM IS NOT PERFECT. <br />THERE MIGHT BE INSTANCES WHERE THE FACE IS NOT BLURRED. <br />
+				<span
+					style="
+						text-align: center;
+						font-size: 1.5vmin;
+						color: red;
+						margin-bottom: 1vh;
+					"
+				>
+					WARNING: THE ALGORITHM IS NOT PERFECT. <br />THERE MIGHT BE INSTANCES
+					WHERE THE FACE IS NOT BLURRED. <br />
 					MAKE SURE TO INSPECT THE VIDEO BEFORE DISTRIBUTING TO OTHERS.
 				</span>
-				<div style="position: relative; flex: 1; display: flex; flex-direction: column; justify-content: flex-end; margin-bottom: 2vh;">
+				<div
+					style="
+						position: relative;
+						flex: 1;
+						display: flex;
+						flex-direction: column;
+						justify-content: flex-end;
+						margin-bottom: 2vh;
+					"
+				>
 					<span style="text-align: center; font-size: 1.5vmin;">
 						Do you wish to proceed?
 					</span>
-					<span id="deidentify_btn" style="font-size: 1.5vmin; bottom: 0px;" class="grow br-pill ba ph3 black">
+					<span
+						id="deidentify-btn"
+						style="font-size: 1.5vmin; bottom: 0px;"
+						class="grow br-pill ba ph3 black"
+					>
 						Proceed
 					</span>
 				</div>
-				<img id="close_deidentification_btn" src="images/close.svg" />
+				<img id="close-deidentification-btn" src="images/close.svg" />
 			</div>
 		</div>
 		<link rel="stylesheet" href="src/css/index.css" />

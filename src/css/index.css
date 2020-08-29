@@ -1,4 +1,4 @@
-.player_container {
+.player-container {
 	margin: 2vh 0px 0px 5px;
 	border: 5px solid black;
 	width: 45vw;
@@ -18,7 +18,7 @@
 	bottom: 0.5vh;
 }
 
-#parts_btn_folder {
+#parts-btn-folder {
 	display: flex;
 	justify-content: space-around;
 	flex-direction: column;
@@ -37,29 +37,38 @@
 	cursor: pointer;
 }
 
-#new_input {
+#main-container {
 	display: flex;
-	flex: 1;
-	justify-content: center;
+	overflow: hidden;
+	height: 90vh;
+}
+
+.sub-button-container,
+#new-input,
+#existing-input {
+	display: flex;
 	flex-direction: column;
 	align-items: center;
 }
 
-#existing_input {
+#new-input,
+#existing-input {
 	flex: 1;
-	display: flex;
 	justify-content: center;
-	align-items: center;
-	flex-direction: column;
 }
 
-#input_screen {
+#input-screen {
 	position: absolute;
 	width: 100%;
 	height: 100%;
 	z-index: 2;
 	display: flex;
 	flex: 1;
+}
+
+.steps {
+	font-size: 4vh;
+	margin-bottom: 2vh;
 }
 
 ::-webkit-scrollbar {
@@ -76,7 +85,7 @@
 	border-radius: 10px;
 }
 
-#progress_bar_container {
+#progress-bar-container {
 	position: relative;
 	border: 1px solid black;
 	height: 1vh;
@@ -86,7 +95,7 @@
 	overflow: hidden;
 }
 
-#progress_bar {
+#progress-bar {
 	position: absolute;
 	height: 100%;
 	max-height: inherit;
@@ -95,7 +104,7 @@
 	background: rgba(255, 99, 132, 1);
 }
 
-#diagram_container {
+#diagram-container {
 	display: flex;
 	flex: 1;
 	flex-direction: column;
@@ -107,7 +116,7 @@
 	margin: 0vh 5vw 0vh 2vw;
 }
 
-#settings_btn {
+#settings-btn {
 	position: absolute;
 	top: 2vh;
 	right: 2vh;
@@ -115,7 +124,7 @@
 	width: 2vw;
 }
 
-#settings_content {
+#settings-content {
 	display: none;
 	flex-direction: column;
 	flex: 1;
@@ -130,7 +139,26 @@
 	border-radius: 2%;
 }
 
-#settings_container {
+#settings-content-title {
+	text-align: center;
+	font-size: 2vmin;
+	margin-top: 5px;
+}
+
+.dialog-line {
+	border-top: 1px dotted black;
+	width: 85%;
+	height: 15px;
+}
+
+#settings-container-menu-btn {
+	display: flex;
+	width: 100%;
+	height: 10%;
+	margin-bottom: 5px;
+}
+
+#settings-container {
 	display: flex;
 	height: 35vh;
 	width: 30vw;
@@ -139,7 +167,7 @@
 	overflow: auto;
 }
 
-.sub_settings_container {
+.sub-settings-container {
 	display: flex;
 	flex: 1;
 	flex-direction: column;
@@ -147,7 +175,13 @@
 	overflow: auto;
 }
 
-#close_btn {
+#epoch-threshold-toggle {
+	color: #ebebeb;
+	border-color: #ebebeb;
+}
+
+#close-btn,
+#close-deidentification-btn {
 	position: absolute;
 	top: 1vh;
 	right: 0.5vw;
@@ -156,16 +190,7 @@
 	width: 2vw;
 }
 
-#close_deidentification_btn {
-	position: absolute;
-	top: 1vh;
-	right: 0.5vw;
-	cursor: pointer;
-	height: 2vh;
-	width: 2vw;
-}
-
-#save_btn {
+#save-btn {
 	width: 10vw;
 	height: 3vh;
 	font-size: 1vw;
@@ -183,7 +208,7 @@
 	z-index: -1;
 }
 
-#deidentification_dialog {
+#deidentification-dialog {
 	display: none;
 	overflow: auto;
 	flex: 1;
@@ -200,7 +225,7 @@
 	border-radius: 2%;
 }
 
-#deidentify_btn {
+#deidentify-btn {
 	width: 10vw;
 	height: 3vh;
 	font-size: 1vw;
@@ -209,33 +234,36 @@
 	cursor: pointer;
 }
 
-.menubar {
+#deidentification-dialog-title {
+	text-align: center;
+	font-size: 2vmin;
+	margin-top: 10px;
+}
+
+.menubar,
+.settings-menubar {
 	line-height: 3vh;
-	margin-right: 1.5%;
 	justify-content: center;
 	text-align: center;
 	cursor: pointer;
-	width: 10%;
 	font-size: 1.5vmin;
 	height: 100%;
 	border-bottom: 1px black solid;
 }
 
-.settings_menubar {
-	line-height: 3vh;
+.menubar {
+	margin-right: 1.5%;
+	width: 10%;
+}
+
+.settings-menubar {
 	margin-left: 5%;
 	margin-right: 5%;
-	justify-content: center;
-	text-align: center;
-	cursor: pointer;
 	flex: 1;
-	height: 100%;
-	font-size: 1.5vmin;
 	border-radius: 15%;
-	border-bottom: 1px black solid;
 }
 
-.directory_paths {
+.directory-paths {
 	white-space: nowrap;
 	margin-right: 10px;
 	overflow-x: auto;
@@ -249,13 +277,13 @@
 	border-bottom: 1px solid black;
 }
 
-#input_screen img {
+#input-screen img {
 	cursor: pointer;
 	width: 10vw;
 	height: 10vh;
 }
 
-#input_screen > span {
+#input-screen > span {
 	top: 5vh;
 	left: 50%;
 	margin-left: -2.5vmin;
@@ -267,4 +295,10 @@
 	cursor: pointer;
 	height: 3vh;
 	width: 3vw;
+}
+
+header {
+	position: absolute;
+	width: 100%;
+	height: 15vh;
 }

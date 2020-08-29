@@ -3,6 +3,7 @@ import * as path from 'path';
 import { IConfigStore } from './configstore';
 import * as util from './util';
 import { deidentifyVideo } from './runPython';
+import * as fs from 'fs';
 
 export default function deidentify(configStore: IConfigStore, videoControl: any) {
 	function init() {
@@ -12,13 +13,13 @@ export default function deidentify(configStore: IConfigStore, videoControl: any)
 	}
 
 	function initCloseDeidentificationButton() {
-		let closeDeidentificationButton = $('#close_deidentification_btn');
+		let closeDeidentificationButton = $('#close-deidentification-btn');
 		closeDeidentificationButton.click(exitDialog);
 	}
 
 	function initDeidentifyDialogButton() {
-		let deidentifyDialogButton = $('#deidentify_dialog_btn');
-		let deidentificationDialog = $('#deidentification_dialog');
+		let deidentifyDialogButton = $('#deidentify-dialog-btn');
+		let deidentificationDialog = $('#deidentification-dialog');
 		deidentifyDialogButton.click(() => {
 			deidentificationDialog.css({ display: 'flex', top: '50vh', opacity: '0%' });
 			deidentificationDialog.animate({ top: '37.5vh', opacity: '100%' }, 500);
@@ -26,15 +27,23 @@ export default function deidentify(configStore: IConfigStore, videoControl: any)
 	}
 
 	function initDeidentifyButton() {
-		let deidentifyButton = $('#deidentify_btn');
-		let contentWrapper = $('#content_wrapper');
+		let deidentifyButton = $('#deidentify-btn');
+		let contentWrapper = $('#content-wrapper');
 		deidentifyButton.click(() => {
 			exitDialog();
-			videoControl.pauseVideoIfPlaying();
-			util.turnOnLoadingScreen();
-			deidentifyVideo().then(handleAfterDeidentification, () => {
-				alert('Something went wrong. Please try again.');
-			});
+			if (safeToDeidentify()) {
+				videoControl.pauseVideoIfPlaying();
+				util.turnOnLoadingScreen();
+				deidentifyVideo().then(handleAfterDeidentification, () => {
+					let message =
+						'Please check if the deidentification.exe file is missing and relaunch the application.';
+					util.sendAlertMessage({ message });
+				});
+			} else {
+				let message =
+					'You have undergone through the deidentification process before. Please move the video files prefixed with "blurred" elsewhere before continuing. \n\nDo not forget to change paths in settings before moving the files.';
+				util.sendAlertMessage({ message });
+			}
 		});
 
 		contentWrapper.click(exitDialog);
@@ -47,10 +56,13 @@ export default function deidentify(configStore: IConfigStore, videoControl: any)
 		configStore.writeSettings();
 		videoControl.loadVideos();
 		util.turnOffLoadingScreen();
+		new Notification('HMovements', {
+			body: 'Deidentification Complete.',
+		});
 	}
 
 	function exitDialog() {
-		let deidentificationDialog = $('#deidentification_dialog');
+		let deidentificationDialog = $('#deidentification-dialog');
 		deidentificationDialog.animate(
 			{ top: '50vh', opacity: '0%' },
 			{
@@ -60,6 +72,16 @@ export default function deidentify(configStore: IConfigStore, videoControl: any)
 				},
 			}
 		);
+	}
+
+	function safeToDeidentify() {
+		let savePath = configStore.get('savePath');
+		const directories = fs.readdirSync(savePath);
+		let hasBeenBlurred = false;
+		directories.forEach((directory) => {
+			if (directory.indexOf('blurred') >= 0) hasBeenBlurred = true;
+		});
+		return !hasBeenBlurred;
 	}
 
 	return {

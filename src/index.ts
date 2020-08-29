@@ -6,8 +6,8 @@ import Video from './ts/videoplayer';
 import Settings from './ts/settings';
 import Startscreen from './ts/startscreen';
 import Deidentify from './ts/deidentify';
-const videoPlayer: HTMLVideoElement = $('#main_player')[0] as HTMLVideoElement;
-const skeletonPlayer: HTMLVideoElement = $('#skeleton_player')[0] as HTMLVideoElement;
+const videoPlayer: HTMLVideoElement = $('#main-player')[0] as HTMLVideoElement;
+const skeletonPlayer: HTMLVideoElement = $('#skeleton-player')[0] as HTMLVideoElement;
 const configStore: IConfigStore = getConfigStore();
 // Main initialization function that calls the initialization functions in other modules.
 function init() {

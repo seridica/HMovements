@@ -18,13 +18,13 @@ export interface IConfigStore {
 }
 
 class ConfigStore implements IConfigStore {
-	private _data: { [Key: string]: any } = {};
+	private data: { [Key: string]: any } = {};
 	set(name: string, value: any) {
-		this._data[name] = value;
+		this.data[name] = value;
 	}
 
 	get(name: string) {
-		if (name in this._data) return this._data[name];
+		if (name in this.data) return this.data[name];
 		else return null;
 	}
 
@@ -57,10 +57,14 @@ class ConfigStore implements IConfigStore {
 			skeletonPath: this.get('skeletonPath'),
 		};
 		let savePath = this.get('savePath');
-		fs.writeFileSync(path.join(savePath, 'config.json'), JSON.stringify(settings), 'utf8');
+		fs.writeFileSync(
+			path.join(savePath, 'config.json'),
+			JSON.stringify(settings),
+			'utf8'
+		);
 	}
 
 	clear() {
-		this._data = {};
+		this.data = {};
 	}
 }

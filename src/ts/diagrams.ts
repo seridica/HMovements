@@ -8,12 +8,12 @@ import diagramHelper from './diagramHelper';
 var diagram = function (videoPlayer: HTMLVideoElement, configStore: IConfigStore) {
 	// Initializes the diagram container by inserting blank canvas into it.
 	function initCanvas() {
-		let diagramContainer = $('#diagram_container');
+		let diagramContainer = $('#diagram-container');
 		for (let key in bodyParts) {
 			diagramContainer.append(`
-			<div id="${key}_diagram_container" style="position: relative;">
-				<input id="${key}_diagram_popout" type="image" title="Pop Out" style="width: 1.5vw; height: 1.5vh; outline: none; position: absolute; right: 2%; top: 5%;" src="images/popout.svg" />
-				<canvas id="${key}_diagram"  width=300 height=100></canvas>
+			<div id="${key}-diagram-container" style="position: relative;">
+				<input id="${key}-diagram-popout" type="image" title="Pop Out" style="width: 1.5vw; height: 1.5vh; outline: none; position: absolute; right: 2%; top: 5%;" src="images/popout.svg" />
+				<canvas id="${key}-diagram"  width=300 height=100></canvas>
 			</div>
 		`);
 		}
@@ -22,13 +22,18 @@ var diagram = function (videoPlayer: HTMLVideoElement, configStore: IConfigStore
 	// Draws canvas on the blank canvas inserted in the function initalizeCanvas.
 	function drawCanvas() {
 		const videoData: IVideoData = JSON.parse(configStore.get('videoData'));
-		let playButton = $('#play_btn');
-		let pauseButton = $('#pause_btn');
+		let playButton = $('#play-btn');
+		let pauseButton = $('#pause-btn');
 		let curVideoPercentage = calculateVideoPercentage();
 		diagramHelper.setVideoPercentage(curVideoPercentage);
 		for (let key in bodyParts) {
 			let part = bodyParts[key].name;
-			const chart = diagramHelper.createChart(key, part, videoData, configStore.getEpochThresholdData());
+			const chart = diagramHelper.createChart(
+				key,
+				part,
+				videoData,
+				configStore.getEpochThresholdData()
+			);
 			let interval: NodeJS.Timeout;
 			playButton.click(() => {
 				interval = setInterval(() => {
@@ -51,7 +56,7 @@ var diagram = function (videoPlayer: HTMLVideoElement, configStore: IConfigStore
 
 	function initVideoScrollBarOnDiagram(chart: Chart) {
 		let hasMouseClickedOnTrackBar = false;
-		let progressBarContainer = $('#progress_bar_container');
+		let progressBarContainer = $('#progress-bar-container');
 
 		progressBarContainer.mousedown((e) => {
 			hasMouseClickedOnTrackBar = true;
@@ -79,7 +84,12 @@ var diagram = function (videoPlayer: HTMLVideoElement, configStore: IConfigStore
 	function calculateVideoPercentage() {
 		let percentage = 0;
 		if (isVideoPlayerLoaded()) {
-			percentage = videoPlayer.currentTime / util.calculateVideoDurationByEpoch(configStore.get('epochLength'), videoPlayer.duration);
+			percentage =
+				videoPlayer.currentTime /
+				util.calculateVideoDurationByEpoch(
+					configStore.get('epochLength'),
+					videoPlayer.duration
+				);
 		}
 		percentage = Math.min(percentage, 1);
 		return percentage;
@@ -108,9 +118,11 @@ var diagram = function (videoPlayer: HTMLVideoElement, configStore: IConfigStore
 	}
 
 	function insertDiagramToggleButtons() {
-		const partsFolder: JQuery<HTMLDivElement> = $('#parts_btn_folder');
+		const partsFolder: JQuery<HTMLDivElement> = $('#parts-btn-folder');
 		for (let key in bodyParts) {
-			partsFolder.append(`<div id=${key} data-toggle="false" class="dim parts" >${bodyParts[key].name}</div>`);
+			partsFolder.append(
+				`<div id=${key} data-toggle="false" class="dim parts" >${bodyParts[key].name}</div>`
+			);
 		}
 	}
 
@@ -123,7 +135,9 @@ var diagram = function (videoPlayer: HTMLVideoElement, configStore: IConfigStore
 
 	function initDiagramToggleButtons() {
 		for (let key in bodyParts) {
-			let partDiagramContainer: JQuery<HTMLDivElement> = $('#' + key + '_diagram_container');
+			let partDiagramContainer: JQuery<HTMLDivElement> = $(
+				'#' + key + '-diagram-container'
+			);
 			let bodyHtml: JQuery<HTMLDivElement> = partDiagramContainer.detach();
 			$('#' + key).off('click');
 			$('#' + key).click(function () {
@@ -133,7 +147,7 @@ var diagram = function (videoPlayer: HTMLVideoElement, configStore: IConfigStore
 					color = 'black';
 					partDiagramContainer.detach();
 				} else {
-					bodyHtml.appendTo('#diagram_container');
+					bodyHtml.appendTo('#diagram-container');
 				}
 				$(this).css({ color, 'border-color': color });
 			});
@@ -142,9 +156,14 @@ var diagram = function (videoPlayer: HTMLVideoElement, configStore: IConfigStore
 
 	function initDiagramPopOutButtons() {
 		for (let key in bodyParts) {
-			let popout: JQuery<HTMLInputElement> = $('#' + key + '_diagram_popout');
+			let popout: JQuery<HTMLInputElement> = $('#' + key + '-diagram-popout');
 			popout.click(() => {
-				let arg = [_.pick(bodyParts, [key]), configStore.get('videoData'), configStore.getEpochThresholdData(), calculateVideoPercentage()];
+				let arg = [
+					_.pick(bodyParts, [key]),
+					configStore.get('videoData'),
+					configStore.getEpochThresholdData(),
+					calculateVideoPercentage(),
+				];
 				ipcRenderer.invoke('create-diagram-window', arg);
 			});
 		}

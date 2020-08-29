@@ -1,10 +1,11 @@
 import { app, BrowserWindow, ipcMain, dialog } from 'electron';
 import * as path from 'path';
+let win: BrowserWindow | null = null;
 function createWindow() {
 	// Create the browser window.
-	const win: BrowserWindow = new BrowserWindow({
-		width: 800,
-		height: 600,
+	win = new BrowserWindow({
+		width: 1600,
+		height: 900,
 		webPreferences: {
 			nodeIntegration: true,
 		},
@@ -13,7 +14,7 @@ function createWindow() {
 	// and load the index.html of the app.
 	win.loadFile(path.join(__dirname, '../index.html'));
 	win.maximize();
-	// win.setMenu(null);
+	win.setMenu(null);
 	// Open the DevTools.
 	win.on('close', () => {
 		app.quit();
@@ -94,5 +95,21 @@ function closeAllDiagramWindows(event: any, arg: any) {
 			win.close();
 			diagramWindows[key] = null;
 		}
+	}
+}
+
+ipcMain.handle('alert-message', sendAlertMessage);
+
+function sendAlertMessage(event: any, arg: any) {
+	let messageBoxOptions: Electron.MessageBoxOptions = {
+		title: 'HMovements',
+		message: '',
+	};
+
+	messageBoxOptions = { ...messageBoxOptions, ...arg };
+	if (win !== null) {
+		return dialog.showMessageBox(win, messageBoxOptions).then((res) => {
+			return res;
+		});
 	}
 }

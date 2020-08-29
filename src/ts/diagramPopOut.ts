@@ -19,7 +19,12 @@ function drawCanvas(bodyParts: BodyParts, rawVideoData: any, epochThresholdData:
 		let part = bodyParts[key].name;
 		setupBlankDiagramForBodyPart(key);
 
-		let chart: Chart = diagramHelper.createChart(key, part, videoData, epochThresholdData);
+		let chart: Chart = diagramHelper.createChart(
+			key,
+			part,
+			videoData,
+			epochThresholdData
+		);
 		ipcRenderer.on('reply-timestamp', (event, arg) => {
 			diagramHelper.setVideoPercentage(arg);
 			chart.update();
@@ -29,6 +34,6 @@ function drawCanvas(bodyParts: BodyParts, rawVideoData: any, epochThresholdData:
 
 function setupBlankDiagramForBodyPart(key: string) {
 	let diagram: HTMLElement = document.getElementById('diagram')!;
-	let newDiagramId = key + '_diagram';
+	let newDiagramId = key + '-diagram';
 	diagram.id = newDiagramId;
 }

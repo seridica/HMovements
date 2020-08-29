@@ -5,7 +5,13 @@ import { fps } from './constants';
 var diagramHelper = (function () {
 	let videoPercentage: number = 0;
 	// Generates the chart options to be used by chart.js.
-	function getChartOptions(part: string, data: { x: number; y: number }[], thresholdValue: number, backgroundColor: string[], epochLength: number) {
+	function getChartOptions(
+		part: string,
+		data: { x: number; y: number }[],
+		thresholdValue: number,
+		backgroundColor: string[],
+		epochLength: number
+	) {
 		const options: any = {
 			type: 'WithLine',
 			data: {
@@ -133,10 +139,16 @@ var diagramHelper = (function () {
 
 					ctx.save();
 					const backgroundColors = options.chartArea.backgroundColor;
-					const tickWidth = (chartArea.right - chartArea.left) / backgroundColors.length;
+					const tickWidth =
+						(chartArea.right - chartArea.left) / backgroundColors.length;
 					for (let i = 0; i < backgroundColors.length; i++) {
 						ctx.fillStyle = backgroundColors[i];
-						ctx.fillRect(chartArea.left + tickWidth * i, chartArea.top, tickWidth, chartArea.bottom - chartArea.top);
+						ctx.fillRect(
+							chartArea.left + tickWidth * i,
+							chartArea.top,
+							tickWidth,
+							chartArea.bottom - chartArea.top
+						);
 					}
 					ctx.restore();
 				}
@@ -150,7 +162,12 @@ var diagramHelper = (function () {
 	}
 
 	// Creates a new chart and returns it.
-	function createChart(key: string, part: string, videoData: any, epochThresholdData: any): Chart {
+	function createChart(
+		key: string,
+		part: string,
+		videoData: any,
+		epochThresholdData: any
+	): Chart {
 		const motionData = videoData.motion;
 		const epochData = videoData.epoch;
 		const partData = motionData[key] as number[];
@@ -160,10 +177,19 @@ var diagramHelper = (function () {
 			return epoch ? 'rgba(139, 240, 193, 0.2)' : 'rgba(255, 99, 132, 0.1)';
 		});
 		const dataPoints: { x: number; y: number }[] = formatDataPoints(partData);
-		let partId = key + '_diagram';
+		let partId = key + '-diagram';
 		const canvas = document.getElementById(partId) as HTMLCanvasElement;
 		const motionCtx = canvas.getContext('2d')!;
-		return new Chart(motionCtx, getChartOptions(part, dataPoints, thresholdValue, chartBackgroundColor, epochThresholdData['epochLength']));
+		return new Chart(
+			motionCtx,
+			getChartOptions(
+				part,
+				dataPoints,
+				thresholdValue,
+				chartBackgroundColor,
+				epochThresholdData['epochLength']
+			)
+		);
 	}
 
 	function findThresholdValueForChart(part: string, epochThresholdData: any): number {

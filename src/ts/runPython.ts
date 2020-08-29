@@ -17,13 +17,19 @@ function executeProcessingScript(options: any): Promise<any> {
 	let configStore: IConfigStore = getConfigStore();
 	const videoPath = configStore.get('videoPath');
 	const savePath = configStore.get('savePath');
-	let { openpose, epochLength, headThreshold, armsThreshold, legsThreshold, feetThreshold } = options;
+	let {
+		openpose,
+		epochLength,
+		headThreshold,
+		armsThreshold,
+		legsThreshold,
+		feetThreshold,
+	} = options;
 	return new Promise((resolve, reject) => {
 		exec(
 			`processing_script.exe "${videoPath}" "${savePath}" ${openpose} ${headThreshold} ${armsThreshold} ${legsThreshold} ${feetThreshold} ${epochLength}`,
 			(err, data) => {
 				if (err) {
-					console.error(err);
 					resolve(null);
 				} else {
 					resolve(data);
@@ -53,12 +59,15 @@ export function deidentifyVideo() {
 	let skeletonPath = configStore.get('skeletonPath');
 	let savePath = configStore.get('savePath');
 	return new Promise((resolve, reject) => {
-		exec(`deidentification.exe "${videoPath}" "${skeletonPath}" "${savePath}"`, (err, data) => {
-			if (err) {
-				reject();
-			} else {
-				resolve(data);
+		exec(
+			`deidentification.exe "${videoPath}" "${skeletonPath}" "${savePath}"`,
+			(err, data) => {
+				if (err) {
+					reject();
+				} else {
+					resolve(data);
+				}
 			}
-		});
+		);
 	});
 }

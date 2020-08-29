@@ -6,23 +6,28 @@ import { IGeneralThresholds } from './constants';
 import * as util from './util';
 import { processVideoWithoutOpenPose } from './runPython';
 
-export default function settings(videoPlayer: HTMLVideoElement, configStore: IConfigStore, videoControl: any, diagram: any) {
+export default function settings(
+	videoPlayer: HTMLVideoElement,
+	configStore: IConfigStore,
+	videoControl: any,
+	diagram: any
+) {
 	// Refreshes settings when the user decides not to save.
 	function refreshSettings() {
 		let epochThresholdData = configStore.getEpochThresholdData();
 		for (let key in epochThresholdData) {
-			$('#' + key + '_setting').val(epochThresholdData[key]);
+			$('#' + key + '-setting').val(epochThresholdData[key]);
 		}
 
 		let directoryPaths = configStore.getDirectoryPaths();
 		for (let key in directoryPaths) {
-			$('#' + _.snakeCase(key) + '_value').text(directoryPaths[key]);
+			$('#' + _.snakeCase(key) + '-value').text(directoryPaths[key]);
 		}
 	}
 
 	// The animation for closing the settings menu.
 	function exitSettings() {
-		let settingsContent = $('#settings_content');
+		let settingsContent = $('#settings-content');
 		settingsContent.animate(
 			{ top: '50vh', opacity: '0%' },
 			{
@@ -43,7 +48,7 @@ export default function settings(videoPlayer: HTMLVideoElement, configStore: ICo
 			let epochThresholdData = configStore.getEpochThresholdData();
 			let threshold: IGeneralThresholds = {};
 			for (let key in epochThresholdData) {
-				let setting = $('#' + key + '_setting').val() as string;
+				let setting = $('#' + key + '-setting').val() as string;
 				let settingNum = Number(setting);
 				if (Number.isNaN(settingNum)) {
 					throw new Error('Please enter numbers only');
@@ -53,12 +58,18 @@ export default function settings(videoPlayer: HTMLVideoElement, configStore: ICo
 				}
 				if (key === 'epochLength') {
 					if (settingNum > videoPlayer.duration) {
-						throw new Error('The Epoch Length must be shorter than the video duration');
+						throw new Error(
+							'The Epoch Length must be shorter than the video duration'
+						);
 					}
-					hasEpochandThresholdChanged = hasEpochandThresholdChanged || epochThresholdData.epochLength != settingNum;
+					hasEpochandThresholdChanged =
+						hasEpochandThresholdChanged ||
+						epochThresholdData.epochLength != settingNum;
 					newSettings = { epochLength: setting };
 				} else {
-					hasEpochandThresholdChanged = hasEpochandThresholdChanged || epochThresholdData[key] !== settingNum;
+					hasEpochandThresholdChanged =
+						hasEpochandThresholdChanged ||
+						epochThresholdData[key] !== settingNum;
 					threshold[key] = settingNum;
 				}
 			}
@@ -69,7 +80,7 @@ export default function settings(videoPlayer: HTMLVideoElement, configStore: ICo
 			let directoryPaths = configStore.getDirectoryPaths();
 			let paths: any = {};
 			for (let key in directoryPaths) {
-				let setting = _.trim($('#' + _.snakeCase(key) + '_value').text());
+				let setting = _.trim($('#' + _.snakeCase(key) + '-value').text());
 				paths[key] = setting;
 			}
 
@@ -97,14 +108,16 @@ export default function settings(videoPlayer: HTMLVideoElement, configStore: ICo
 	function initEpochThresholdSettings() {
 		let epochThresholdData = configStore.getEpochThresholdData();
 		let mutableSettingsList = [];
-		let epochThresholdSettings = $('#epoch_threshold_settings');
+		let epochThresholdSettings = $('#epoch-threshold-settings');
 
 		for (let key in epochThresholdData) {
 			mutableSettingsList.push(`
 			<div style="flex: 1; align-items: center;">
-				<label style="font-size: 1.5vmin; text-align: center;">${key == 'epochLength' ? 'Epoch Length' : key}: </label>
+				<label style="font-size: 1.5vmin; text-align: center;">${
+					key == 'epochLength' ? 'Epoch Length' : key
+				}: </label>
 				<input
-					id="${key}_setting"
+					id="${key}-setting"
 					style="text-align: center; font-size: 1vw; height: 3vh; width: 7vw; outline: none; border: none; border-bottom: 1px solid black;"
 					type="text"
 					value="${epochThresholdData[key]}"
@@ -118,8 +131,8 @@ export default function settings(videoPlayer: HTMLVideoElement, configStore: ICo
 	}
 
 	function initSettingsButton() {
-		let settingsButton = $('#settings_btn');
-		let settingsContent = $('#settings_content');
+		let settingsButton = $('#settings-btn');
+		let settingsContent = $('#settings-content');
 		settingsButton.click(() => {
 			settingsContent.css({ display: 'flex', top: '50vh', opacity: '0%' });
 			settingsContent.animate({ top: '25vh', opacity: '100%' }, 500);
@@ -128,17 +141,17 @@ export default function settings(videoPlayer: HTMLVideoElement, configStore: ICo
 	}
 
 	function initCloseSettingButton() {
-		let closeButton = $('#close_btn');
+		let closeButton = $('#close-btn');
 		closeButton.click(exitSettings);
 	}
 
 	function initCloseSettingsWhenClickedBackground() {
-		let contentWrapper = $('#content_wrapper');
+		let contentWrapper = $('#content-wrapper');
 		contentWrapper.click(exitSettings);
 	}
 
 	function initSaveButton() {
-		let saveSettingsButton = $('#save_btn');
+		let saveSettingsButton = $('#save-btn');
 		saveSettingsButton.click(async () => {
 			try {
 				videoControl.pauseVideoIfPlaying();
@@ -149,9 +162,9 @@ export default function settings(videoPlayer: HTMLVideoElement, configStore: ICo
 					ipcRenderer.invoke('close-all-windows');
 					util.turnOnLoadingScreen();
 					await processNewVideoSettings();
+					notifyProcessNewSettings();
 				}
 				diagram.refreshCanvas();
-				videoControl.resetVideoTime();
 			} catch (error) {
 				remote.dialog.showErrorBox(error.message, 'Please Try Again');
 			}
@@ -169,19 +182,29 @@ export default function settings(videoPlayer: HTMLVideoElement, configStore: ICo
 			feetThreshold: thresholds.Feet,
 		};
 		const res = await processVideoWithoutOpenPose(openPoseOptions);
+		util.turnOffLoadingScreen();
 		if (res) {
 			const videoData = util.processRawData(res);
 			configStore.set('videoData', videoData);
 			util.updateFile(configStore);
-			util.turnOffLoadingScreen();
+		} else {
+			throw new Error(
+				'Please check if the processing_script.exe file is missing and relaunch the application.'
+			);
 		}
 	}
 
+	function notifyProcessNewSettings() {
+		new Notification('HMovements', {
+			body: 'New Settings Processed.',
+		});
+	}
+
 	function initEpochThresholdToggle() {
-		let epochThresholdToggle = $('#epoch_threshold_toggle');
-		let epochThresholdSettings = $('#epoch_threshold_settings');
-		let directoryToggle = $('#directory_toggle');
-		let directorySettings = $('#directory_settings');
+		let epochThresholdToggle = $('#epoch-threshold-toggle');
+		let epochThresholdSettings = $('#epoch-threshold-settings');
+		let directoryToggle = $('#directory-toggle');
+		let directorySettings = $('#directory-settings');
 		epochThresholdToggle.click(function () {
 			if (!$(this).data('toggle')) {
 				toggleEpochThresholdButtons($(this), true, epochThresholdSettings);
@@ -191,19 +214,27 @@ export default function settings(videoPlayer: HTMLVideoElement, configStore: ICo
 	}
 
 	function initDirectoryToggle() {
-		let directoryToggle = $('#directory_toggle');
-		let directorySettings = $('#directory_settings');
-		let epochThresholdToggle = $('#epoch_threshold_toggle');
-		let epochThresholdSettings = $('#epoch_threshold_settings');
+		let directoryToggle = $('#directory-toggle');
+		let directorySettings = $('#directory-settings');
+		let epochThresholdToggle = $('#epoch-threshold-toggle');
+		let epochThresholdSettings = $('#epoch-threshold-settings');
 		directoryToggle.click(function () {
 			if (!$(this).data('toggle')) {
 				toggleEpochThresholdButtons($(this), true, directorySettings);
-				toggleEpochThresholdButtons(epochThresholdToggle, false, epochThresholdSettings);
+				toggleEpochThresholdButtons(
+					epochThresholdToggle,
+					false,
+					epochThresholdSettings
+				);
 			}
 		});
 	}
 
-	function toggleEpochThresholdButtons(button: JQuery<HTMLElement>, toggleOn: boolean, content: JQuery<HTMLElement>) {
+	function toggleEpochThresholdButtons(
+		button: JQuery<HTMLElement>,
+		toggleOn: boolean,
+		content: JQuery<HTMLElement>
+	) {
 		let color: string = '#ebebeb';
 		let display: string = 'flex';
 		if (!toggleOn) {
@@ -216,35 +247,33 @@ export default function settings(videoPlayer: HTMLVideoElement, configStore: ICo
 	}
 
 	function initMainMenuButton() {
-		let mainMenuButton = $('#main_menu_btn');
+		let mainMenuButton = $('#main-menu-btn');
 		mainMenuButton.click(() => {
-			remote.dialog
-				.showMessageBox(remote.getCurrentWindow(), {
-					message: 'Are you sure you want to return to Main Menu?',
-					title: 'Main Menu',
-					buttons: ['Ok', 'Cancel'],
-				})
-				.then((res) => {
-					if (res.response === 0) document.location.reload();
-				});
+			let dialogOptions = {
+				message: 'Are you sure you want to return to Main Menu?',
+				buttons: ['Ok', 'Cancel'],
+			};
+			ipcRenderer.invoke('alert-message', dialogOptions).then((res) => {
+				if (res.response === 0) document.location.reload();
+			});
 		});
 	}
 
 	function initDirectorySettings() {
 		let directoryData: any = configStore.getDirectoryPaths();
-		let directorySettings = $('#directory_settings');
+		let directorySettings = $('#directory-settings');
 		for (let key in directoryData) {
 			let dirID = _.snakeCase(key);
 			let settingName = _.startCase(key);
-			let settingId = dirID + '_value';
+			let settingId = dirID + '-value';
 			let settingValue = directoryData[key];
-			let editSettingId = 'edit_' + dirID;
+			let editSettingId = 'edit-' + dirID;
 			directorySettings.append(
 				`<div style="flex: 1; align-items: center;">
 					<label style="font-size: 1.5vmin; text-align: center;">${settingName}: </label>
 					<br />
 					<div style="display: flex;">
-						<span class="directory_paths" id="${settingId}">
+						<span class="directory-paths" id="${settingId}">
 							${settingValue}
 						</span>
 						<img id="${editSettingId}" class="dim" style="cursor: pointer;" src="images/link.svg" />
@@ -252,16 +281,16 @@ export default function settings(videoPlayer: HTMLVideoElement, configStore: ICo
 				</div>`
 			);
 
-			$('#edit_' + dirID).click(() => {
+			$('#edit-' + dirID).click(() => {
 				remote.dialog
 					.showOpenDialog(remote.getCurrentWindow(), {
 						properties: ['openFile'],
-						filters: [{ name: 'Videos', extensions: ['mp4'] }],
+						filters: [{ name: 'Videos', extensions: ['mp4', 'webm'] }],
 					})
 					.then((result) => {
 						if (result.canceled === false) {
 							const path = result.filePaths[0];
-							$('#' + dirID + '_value').text(path);
+							$('#' + dirID + '-value').text(path);
 						}
 					})
 					.catch((err) => {

@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as _ from 'lodash';
 import * as $ from 'jquery';
 import { IConfigStore } from './configstore';
+import { ipcRenderer } from 'electron';
 
 // Process the new motion data from the Python script and update or create a data.json file.
 const processRawData = (data: string) => {
@@ -50,7 +51,8 @@ const importExistingFile = (savePath: string) => {
 		const videoData = fs.readFileSync(`${savePath}/data.json`, 'utf8');
 		return [configFile, videoData];
 	} catch (error) {
-		alert('Make sure the folder is not missing any files.');
+		let message = 'Make sure the folder is not missing any files.';
+		sendAlertMessage({ message });
 		return [];
 	}
 };
@@ -85,14 +87,17 @@ const findNumOfFilesInDirectory = (savePath: string): number => {
 	}
 };
 
-const toggleElementVisibility = (jQueryElement: JQuery<HTMLElement>, isVisible: boolean) => {
+const toggleElementVisibility = (
+	jQueryElement: JQuery<HTMLElement>,
+	isVisible: boolean
+) => {
 	let display: string = 'none';
 	if (isVisible) display = '';
 	jQueryElement.css({ display });
 };
 
 const checkIfVideosAreDoneLoading = (): Promise<void> => {
-	const videoPlayer: HTMLVideoElement = $('#main_player')[0] as HTMLVideoElement;
+	const videoPlayer: HTMLVideoElement = $('#main-player')[0] as HTMLVideoElement;
 	return new Promise((resolve, reject) => {
 		var interval = setInterval(() => {
 			if (videoPlayer.readyState >= 3) {
@@ -104,17 +109,21 @@ const checkIfVideosAreDoneLoading = (): Promise<void> => {
 };
 
 const turnOnLoadingScreen = () => {
-	const mainContent = $('#main_content');
+	const mainContent = $('#main-content');
 	const loading = $('#loading');
 	toggleElementVisibility(mainContent, false);
 	toggleElementVisibility(loading, true);
 };
 
 const turnOffLoadingScreen = () => {
-	const mainContent = $('#main_content');
+	const mainContent = $('#main-content');
 	const loading = $('#loading');
 	toggleElementVisibility(mainContent, true);
 	toggleElementVisibility(loading, false);
+};
+
+const sendAlertMessage = (dialogOption: Electron.MessageBoxOptions) => {
+	return ipcRenderer.invoke('alert-message', dialogOption);
 };
 
 export {
@@ -130,4 +139,5 @@ export {
 	checkIfVideosAreDoneLoading,
 	turnOffLoadingScreen,
 	turnOnLoadingScreen,
+	sendAlertMessage,
 };
